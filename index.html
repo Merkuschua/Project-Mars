@@ -6,730 +6,152 @@
 <title>The Strategic King</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --gold: #C9A84C;
-    --gold-light: #E8C97A;
-    --gold-dim: #7A6230;
-    --dark: #0A0A0F;
-    --dark2: #111118;
-    --dark3: #18181F;
-    --dark4: #222230;
-    --border: rgba(201,168,76,0.15);
-    --border-bright: rgba(201,168,76,0.4);
-    --text: #E8E4D8;
-    --text-dim: #888070;
-    --text-muted: #444040;
-    --purple: #6B4FBB;
-    --purple-light: #9B7FEB;
-    --teal: #2A9D8F;
-    --teal-light: #4ECDC4;
-    --coral: #E76F51;
-    --pink: #B5499A;
-    --green: #57A773;
-    --radius: 12px;
-    --radius-sm: 8px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--dark);
-    color: var(--text);
-    font-family: 'Inter', sans-serif;
-    font-weight: 300;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Ambient bg pattern */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 20% 0%, rgba(107,79,187,0.08) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(201,168,76,0.06) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .app {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 0 0 80px;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ── HEADER ── */
-  .header {
-    padding: 32px 20px 20px;
-    border-bottom: 0.5px solid var(--border);
-  }
-
-  .header-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-  }
-
-  .king-title {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-
-  .king-name {
-    font-family: 'Cinzel', serif;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    color: var(--text);
-  }
-
-  .level-ring {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    border: 1.5px solid var(--gold);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .level-ring::before {
-    content: '';
-    position: absolute;
-    inset: 3px;
-    border-radius: 50%;
-    border: 0.5px solid rgba(201,168,76,0.3);
-  }
-
-  .level-num {
-    font-family: 'Cinzel', serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--gold);
-    line-height: 1;
-  }
-
-  .level-lbl {
-    font-size: 8px;
-    color: var(--gold-dim);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-
-  .xp-section { margin-bottom: 4px; }
-
-  .xp-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-  }
-
-  .xp-meta span:last-child { color: var(--gold); }
-
-  .xp-track {
-    height: 3px;
-    background: var(--dark4);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .xp-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold-dim), var(--gold));
-    border-radius: 2px;
-    transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
-    width: 0%;
-  }
-
-  /* ── NAV ── */
-  .nav {
-    display: flex;
-    padding: 0 20px;
-    border-bottom: 0.5px solid var(--border);
-    gap: 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav::-webkit-scrollbar { display: none; }
-
-  .nav-item {
-    padding: 14px 16px;
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    color: var(--text-dim);
-    cursor: pointer;
-    border-bottom: 1.5px solid transparent;
-    white-space: nowrap;
-    transition: all 0.2s;
-    background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    font-family: 'Inter', sans-serif;
-    font-weight: 400;
-  }
-
-  .nav-item.active {
-    color: var(--gold);
-    border-bottom-color: var(--gold);
-  }
-
-  /* ── SECTIONS ── */
-  .section { display: none; padding: 20px; }
-  .section.active { display: block; }
-
-  .section-heading {
-    font-family: 'Cinzel', serif;
-    font-size: 11px;
-    letter-spacing: 0.18em;
-    color: var(--gold-dim);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  /* ── DOMAIN CARDS ── */
-  .domain-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .domain-card {
-    background: var(--dark2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-  }
-
-  .domain-card:hover { border-color: var(--border-bright); }
-
-  .domain-icon {
-    font-size: 18px;
-    margin-bottom: 8px;
-    display: block;
-  }
-
-  .domain-label {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    margin-bottom: 6px;
-  }
-
-  .domain-score {
-    font-family: 'Cinzel', serif;
-    font-size: 26px;
-    font-weight: 600;
-    line-height: 1;
-    margin-bottom: 8px;
-  }
-
-  .domain-bar {
-    height: 2px;
-    background: var(--dark4);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .domain-bar-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 1s cubic-bezier(0.4,0,0.2,1);
-    width: 0%;
-  }
-
-  .domain-delta {
-    font-size: 11px;
-    margin-top: 6px;
-  }
-
-  /* ── STATS ROW ── */
-  .stats-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-
-  .stat-box {
-    background: var(--dark2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 12px 10px;
-    text-align: center;
-  }
-
-  .stat-val {
-    font-family: 'Cinzel', serif;
-    font-size: 20px;
-    font-weight: 600;
-    color: var(--gold);
-    line-height: 1;
-    margin-bottom: 4px;
-  }
-
-  .stat-lbl {
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.06em;
-  }
-
-  /* ── HABITS ── */
-  .habit-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 0.5px solid var(--border);
-    cursor: pointer;
-  }
-
-  .habit-item:last-child { border-bottom: none; }
-
-  .habit-orb {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 1.5px solid var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all 0.25s;
-    font-size: 12px;
-  }
-
-  .habit-orb.done {
-    background: var(--teal);
-    border-color: var(--teal);
-  }
-
-  .habit-body { flex: 1 }
-
-  .habit-name {
-    font-size: 14px;
-    color: var(--text);
-    margin-bottom: 3px;
-    transition: color 0.2s;
-  }
-
-  .habit-name.done {
-    color: var(--text-muted);
-    text-decoration: line-through;
-  }
-
-  .habit-streak {
-    display: flex;
-    gap: 3px;
-  }
-
-  .s-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--dark4);
-  }
-
-  .s-dot.hit { background: var(--teal); }
-
-  .habit-xp {
-    font-size: 11px;
-    color: var(--purple-light);
-    font-weight: 500;
-  }
-
-  /* ── CONTRACT ── */
-  .contract-item {
-    background: var(--dark2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 10px;
-    display: flex;
-    gap: 12px;
-    cursor: pointer;
-    transition: border-color 0.2s;
-  }
-
-  .contract-item:hover { border-color: var(--border-bright); }
-
-  .contract-item.upheld { border-color: rgba(42,157,143,0.4); }
-
-  .contract-box {
-    width: 22px;
-    height: 22px;
-    border-radius: 4px;
-    border: 1.5px solid var(--text-muted);
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    transition: all 0.2s;
-    margin-top: 1px;
-  }
-
-  .contract-box.done {
-    background: var(--teal);
-    border-color: var(--teal);
-    color: white;
-  }
-
-  .contract-domain {
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-    font-weight: 500;
-  }
-
-  .contract-rule {
-    font-size: 13px;
-    color: var(--text-dim);
-    line-height: 1.5;
-  }
-
-  /* ── PERSONA MAP ── */
-  .persona-hero {
-    background: var(--dark2);
-    border: 0.5px solid var(--border-bright);
-    border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 20px;
-    text-align: center;
-  }
-
-  .persona-crest {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    border: 1.5px solid var(--gold);
-    margin: 0 auto 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 26px;
-    position: relative;
-  }
-
-  .persona-crest::before {
-    content: '';
-    position: absolute;
-    inset: 4px;
-    border-radius: 50%;
-    border: 0.5px solid rgba(201,168,76,0.25);
-  }
-
-  .persona-title {
-    font-family: 'Cinzel', serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--gold);
-    margin-bottom: 6px;
-  }
-
-  .persona-sub {
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.6;
-    max-width: 260px;
-    margin: 0 auto 16px;
-  }
-
-  .persona-progress {
-    font-size: 11px;
-    color: var(--gold-dim);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .overall-bar {
-    height: 4px;
-    background: var(--dark4);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .overall-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--purple), var(--gold));
-    border-radius: 2px;
-    width: 0%;
-    transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
-  }
-
-  /* Trait bars */
-  .trait-section { margin-bottom: 20px; }
-
-  .trait-heading {
-    font-size: 10px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 12px;
-  }
-
-  .trait-item {
-    margin-bottom: 14px;
-  }
-
-  .trait-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 6px;
-  }
-
-  .trait-name {
-    font-size: 13px;
-    color: var(--text);
-  }
-
-  .trait-pct {
-    font-size: 12px;
-    font-weight: 500;
-  }
-
-  .trait-track {
-    height: 3px;
-    background: var(--dark4);
-    border-radius: 2px;
-    overflow: hidden;
-  }
-
-  .trait-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 1s cubic-bezier(0.4,0,0.2,1);
-    width: 0%;
-  }
-
-  .trait-gap {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 4px;
-  }
-
-  /* Archetype pills */
-  .arch-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
-  }
-
-  .arch-pill {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-family: 'Cinzel', serif;
-    letter-spacing: 0.06em;
-    border: 0.5px solid;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .arch-pill.purple { border-color: var(--purple); color: var(--purple-light); background: rgba(107,79,187,0.08); }
-  .arch-pill.teal { border-color: var(--teal); color: var(--teal-light); background: rgba(42,157,143,0.08); }
-  .arch-pill.gold { border-color: var(--gold-dim); color: var(--gold); background: rgba(201,168,76,0.08); }
-  .arch-pill.active-pill { opacity: 0.5; }
-
-  /* ── FINANCE ── */
-  .finance-card {
-    background: var(--dark2);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    margin-bottom: 10px;
-  }
-
-  .finance-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-  }
-
-  .finance-val {
-    font-family: 'Cinzel', serif;
-    font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-
-  .finance-sub {
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .finance-row-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 0.5px solid var(--border);
-    font-size: 13px;
-  }
-
-  .finance-row-item:last-child { border-bottom: none; }
-
-  .finance-row-label { color: var(--text-dim); }
-
-  /* ── BOTTOM NAV ── */
-  .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 480px;
-    background: rgba(10,10,15,0.95);
-    border-top: 0.5px solid var(--border);
-    display: flex;
-    padding: 8px 0 env(safe-area-inset-bottom, 8px);
-    z-index: 100;
-    backdrop-filter: blur(12px);
-  }
-
-  .bn-item {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 6px;
-    cursor: pointer;
-    transition: color 0.2s;
-    color: var(--text-muted);
-    font-size: 10px;
-    letter-spacing: 0.06em;
-    background: none;
-    border: none;
-    font-family: 'Inter', sans-serif;
-  }
-
-  .bn-item.active { color: var(--gold); }
-
-  .bn-icon { font-size: 20px; }
-
-  /* ── ANIMATIONS ── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .section.active > * {
-    animation: fadeUp 0.35s ease forwards;
-  }
-
-  @keyframes pulse-gold {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(201,168,76,0); }
-    50% { box-shadow: 0 0 0 6px rgba(201,168,76,0.08); }
-  }
-
-  .level-ring { animation: pulse-gold 3s infinite; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 380px) {
-    .domain-grid { grid-template-columns: 1fr 1fr; }
-    .king-name { font-size: 18px; }
-  }
-
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: var(--dark); }
-  ::-webkit-scrollbar-thumb { background: var(--dark4); border-radius: 2px; }
-
-  .check-icon { color: white; font-size: 11px; }
-
-  .today-badge {
-    font-size: 10px;
-    padding: 3px 10px;
-    border-radius: 20px;
-    background: rgba(201,168,76,0.1);
-    color: var(--gold);
-    border: 0.5px solid rgba(201,168,76,0.3);
-    letter-spacing: 0.06em;
-  }
-
-  input[type="range"] {
-    -webkit-appearance: none;
-    width: 100%;
-    height: 3px;
-    background: var(--dark4);
-    border-radius: 2px;
-    outline: none;
-    margin: 8px 0;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--gold);
-    cursor: pointer;
-  }
-
-  .log-btn {
-    width: 100%;
-    padding: 12px;
-    border: 0.5px solid var(--border-bright);
-    border-radius: var(--radius-sm);
-    background: rgba(201,168,76,0.06);
-    color: var(--gold);
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    letter-spacing: 0.06em;
-    margin-top: 16px;
-    transition: background 0.2s;
-  }
-  .log-btn:hover { background: rgba(201,168,76,0.12); }
-
-  .xp-toast {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%) translateY(-60px);
-    background: var(--dark3);
-    border: 0.5px solid var(--gold);
-    border-radius: var(--radius-sm);
-    padding: 8px 20px;
-    font-size: 13px;
-    color: var(--gold);
-    font-family: 'Cinzel', serif;
-    z-index: 999;
-    transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
-    pointer-events: none;
-  }
-  .xp-toast.show { transform: translateX(-50%) translateY(0); }
+:root {
+  --gold:#C9A84C;--gold-light:#E8C97A;--gold-dim:#7A6230;
+  --dark:#0A0A0F;--dark2:#111118;--dark3:#18181F;--dark4:#222230;
+  --border:rgba(201,168,76,0.15);--border-bright:rgba(201,168,76,0.4);
+  --text:#E8E4D8;--text-dim:#888070;--text-muted:#444040;
+  --purple:#6B4FBB;--purple-light:#9B7FEB;
+  --teal:#2A9D8F;--teal-light:#4ECDC4;
+  --coral:#E76F51;--pink:#B5499A;--green:#57A773;--red:#E24B4A;
+  --radius:12px;--radius-sm:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--dark);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 20% 0%,rgba(107,79,187,0.08) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 100%,rgba(201,168,76,0.06) 0%,transparent 60%);pointer-events:none;z-index:0}
+.app{max-width:480px;margin:0 auto;padding:0 0 90px;position:relative;z-index:1}
+.header{padding:28px 20px 16px;border-bottom:0.5px solid var(--border)}
+.header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.king-title{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:3px}
+.king-name{font-family:'Cinzel',serif;font-size:21px;font-weight:600;letter-spacing:0.05em}
+.level-ring{width:50px;height:50px;border-radius:50%;border:1.5px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;animation:pulse-gold 3s infinite}
+.level-num{font-family:'Cinzel',serif;font-size:17px;font-weight:600;color:var(--gold);line-height:1}
+.level-lbl{font-size:8px;color:var(--gold-dim);letter-spacing:0.1em;text-transform:uppercase;margin-top:2px}
+.xp-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-bottom:5px}
+.xp-meta span:last-child{color:var(--gold)}
+.xp-track{height:3px;background:var(--dark4);border-radius:2px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--gold-dim),var(--gold));border-radius:2px;transition:width 1.2s cubic-bezier(.4,0,.2,1);width:0%}
+.nav{display:flex;padding:0 20px;border-bottom:0.5px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav-item{padding:13px 14px;font-size:12px;letter-spacing:0.05em;color:var(--text-dim);cursor:pointer;border-bottom:1.5px solid transparent;white-space:nowrap;transition:all 0.2s;background:none;border-top:none;border-left:none;border-right:none;font-family:'Inter',sans-serif}
+.nav-item.active{color:var(--gold);border-bottom-color:var(--gold)}
+.section{display:none;padding:20px}.section.active{display:block}
+.sec-heading{font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.18em;color:var(--gold-dim);text-transform:uppercase;margin-bottom:14px}
+.card{background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px}
+.stat-box{background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:11px 10px;text-align:center}
+.stat-val{font-family:'Cinzel',serif;font-size:19px;font-weight:600;color:var(--gold);line-height:1;margin-bottom:3px}
+.stat-lbl{font-size:10px;color:var(--text-dim);letter-spacing:0.05em}
+.domain-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.domain-card{background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius);padding:13px;cursor:pointer;transition:border-color 0.2s}
+.domain-card:hover{border-color:var(--border-bright)}
+.domain-icon{font-size:17px;margin-bottom:7px;display:block}
+.domain-label{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:5px}
+.domain-score{font-family:'Cinzel',serif;font-size:24px;font-weight:600;line-height:1;margin-bottom:7px}
+.domain-bar{height:2px;background:var(--dark4);border-radius:2px;overflow:hidden}
+.domain-bar-fill{height:100%;border-radius:2px;transition:width 1s;width:0%}
+.domain-delta{font-size:11px;margin-top:5px}
+.habit-item{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:0.5px solid var(--border)}
+.habit-item:last-child{border-bottom:none;padding-bottom:0}
+.habit-orb{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--text-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.25s;font-size:11px;cursor:pointer}
+.habit-orb.done{background:var(--teal);border-color:var(--teal);color:white}
+.habit-body{flex:1;min-width:0}
+.habit-name{font-size:13px;color:var(--text);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.habit-name.done{color:var(--text-muted);text-decoration:line-through}
+.habit-streak{display:flex;gap:3px}
+.s-dot{width:6px;height:6px;border-radius:50%;background:var(--dark4)}
+.s-dot.hit{background:var(--teal)}
+.habit-xp{font-size:11px;color:var(--purple-light);font-weight:500;white-space:nowrap}
+.del-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0 4px;line-height:1;transition:color 0.2s;flex-shrink:0}
+.del-btn:hover{color:var(--red)}
+.open-add-btn{width:100%;padding:10px;border:0.5px dashed var(--border-bright);border-radius:var(--radius-sm);background:none;color:var(--text-dim);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:0.06em;transition:all 0.2s;margin-top:4px}
+.open-add-btn:hover{border-color:var(--gold);color:var(--gold)}
+.contract-item{background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius);padding:13px;margin-bottom:8px;display:flex;gap:11px;transition:border-color 0.2s}
+.contract-item.upheld{border-color:rgba(42,157,143,0.4)}
+.contract-box{width:21px;height:21px;border-radius:4px;border:1.5px solid var(--text-muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.2s;margin-top:2px;cursor:pointer}
+.contract-box.done{background:var(--teal);border-color:var(--teal);color:white}
+.contract-body{flex:1;min-width:0;cursor:pointer}
+.contract-domain{font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:3px;font-weight:500}
+.contract-rule{font-size:12px;color:var(--text-dim);line-height:1.5}
+.persona-hero{background:var(--dark2);border:0.5px solid var(--border-bright);border-radius:var(--radius);padding:18px;margin-bottom:18px;text-align:center}
+.persona-crest{width:60px;height:60px;border-radius:50%;border:1.5px solid var(--gold);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.persona-title{font-family:'Cinzel',serif;font-size:17px;font-weight:600;color:var(--gold);margin-bottom:5px}
+.persona-sub{font-size:12px;color:var(--text-dim);line-height:1.6;max-width:260px;margin:0 auto 14px}
+.persona-pct{font-size:11px;color:var(--gold-dim);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:7px}
+.overall-bar{height:3px;background:var(--dark4);border-radius:2px;overflow:hidden}
+.overall-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--gold));border-radius:2px;width:0%;transition:width 1.2s}
+.arch-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.arch-pill{padding:5px 13px;border-radius:20px;font-size:11px;font-family:'Cinzel',serif;letter-spacing:0.05em;border:0.5px solid}
+.arch-pill.purple{border-color:var(--purple);color:var(--purple-light);background:rgba(107,79,187,0.08)}
+.arch-pill.teal{border-color:var(--teal);color:var(--teal-light);background:rgba(42,157,143,0.08)}
+.arch-pill.gold{border-color:var(--gold-dim);color:var(--gold);background:rgba(201,168,76,0.08)}
+.trait-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px}
+.trait-body{flex:1}
+.trait-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.trait-name{font-size:13px;color:var(--text)}
+.trait-pct{font-size:12px;font-weight:500}
+.trait-track{height:3px;background:var(--dark4);border-radius:2px;overflow:hidden}
+.trait-fill{height:100%;border-radius:2px;transition:width 1s;width:0%}
+.trait-gap{font-size:11px;color:var(--text-muted);margin-top:3px}
+.fin-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.fin-tab{padding:6px 14px;border-radius:20px;font-size:12px;border:0.5px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s}
+.fin-tab.active{border-color:var(--gold-dim);color:var(--gold);background:rgba(201,168,76,0.08)}
+.fin-section{display:none}.fin-section.active{display:block}
+.fin-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.fin-card{background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius);padding:13px}
+.fin-label{font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin-bottom:5px}
+.fin-val{font-family:'Cinzel',serif;font-size:20px;font-weight:600;margin-bottom:3px}
+.fin-sub{font-size:11px;color:var(--text-dim)}
+.log-row{display:flex;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:13px;gap:6px}
+.log-row:last-child{border-bottom:none}
+.log-tag{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500;flex-shrink:0}
+.tag-trade{background:rgba(107,79,187,0.15);color:var(--purple-light)}
+.tag-spend{background:rgba(231,111,81,0.15);color:var(--coral)}
+.log-desc{color:var(--text-dim);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.log-amt{font-weight:500;white-space:nowrap;flex-shrink:0}
+.rule-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.rule-row:last-child{border-bottom:none}
+.rule-label{color:var(--text-dim)}
+.rule-val{font-size:11px;color:var(--gold)}
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.sheet-overlay.open{display:flex}
+.sheet{background:var(--dark2);border:0.5px solid var(--border-bright);border-top:1px solid var(--border-bright);border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:480px;animation:slideUp 0.3s cubic-bezier(.4,0,.2,1)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-title{font-family:'Cinzel',serif;font-size:13px;letter-spacing:0.1em;color:var(--gold);margin-bottom:18px;text-align:center}
+.sheet-input{width:100%;background:var(--dark4);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-size:14px;font-family:'Inter',sans-serif;outline:none;margin-bottom:10px}
+.sheet-input:focus{border-color:var(--gold)}
+.sheet-input::placeholder{color:var(--text-muted)}
+.sheet-row{display:flex;gap:8px;margin-bottom:10px}
+.sheet-select{flex:1;background:var(--dark4);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;cursor:pointer}
+.sheet-select option{background:var(--dark2)}
+.sheet-btns{display:flex;gap:8px;margin-top:6px}
+.sheet-confirm{flex:1;padding:12px;background:rgba(201,168,76,0.1);border:0.5px solid var(--gold-dim);border-radius:var(--radius-sm);color:var(--gold);font-size:13px;font-family:'Cinzel',serif;letter-spacing:0.08em;cursor:pointer;transition:background 0.2s}
+.sheet-confirm:hover{background:rgba(201,168,76,0.2)}
+.sheet-cancel{padding:12px 18px;background:none;border:0.5px solid var(--border);border-radius:var(--radius-sm);color:var(--text-dim);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer}
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:rgba(10,10,15,0.96);border-top:0.5px solid var(--border);display:flex;padding:6px 0 env(safe-area-inset-bottom,8px);z-index:100;backdrop-filter:blur(12px)}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px;cursor:pointer;transition:color 0.2s;color:var(--text-muted);font-size:9px;letter-spacing:0.05em;background:none;border:none;font-family:'Inter',sans-serif}
+.bn-item.active{color:var(--gold)}
+.bn-icon{font-size:19px}
+.xp-toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-70px);background:var(--dark3);border:0.5px solid var(--gold);border-radius:var(--radius-sm);padding:8px 20px;font-size:13px;color:var(--gold);font-family:'Cinzel',serif;z-index:999;transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);pointer-events:none;white-space:nowrap}
+.xp-toast.show{transform:translateX(-50%) translateY(0)}
+@keyframes pulse-gold{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 5px rgba(201,168,76,0.07)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.section.active>*{animation:fadeUp 0.3s ease forwards}
 </style>
 </head>
 <body>
 
-<div id="xp-toast" class="xp-toast">+20 XP</div>
+<div id="xp-toast" class="xp-toast"></div>
+
+<div class="sheet-overlay" id="sheet-overlay">
+  <div class="sheet" id="sheet">
+    <div class="sheet-title" id="sheet-title"></div>
+    <div id="sheet-body"></div>
+  </div>
+</div>
 
 <div class="app">
-  <!-- HEADER -->
+
   <div class="header">
     <div class="header-top">
       <div>
@@ -737,22 +159,14 @@
         <div class="king-name">Marcus</div>
       </div>
       <div class="level-ring">
-        <div class="level-num" id="level-num">12</div>
+        <div class="level-num">12</div>
         <div class="level-lbl">Level</div>
       </div>
     </div>
-    <div class="xp-section">
-      <div class="xp-meta">
-        <span>Overall XP</span>
-        <span id="xp-label">2,340 / 3,000</span>
-      </div>
-      <div class="xp-track">
-        <div class="xp-fill" id="xp-fill"></div>
-      </div>
-    </div>
+    <div class="xp-meta"><span>Overall XP</span><span id="xp-label">2,340 / 3,000</span></div>
+    <div class="xp-track"><div class="xp-fill" id="xp-fill"></div></div>
   </div>
 
-  <!-- TOP NAV -->
   <div class="nav">
     <button class="nav-item active" onclick="switchTab('overview')">Overview</button>
     <button class="nav-item" onclick="switchTab('habits')">Habits</button>
@@ -763,466 +177,461 @@
 
   <!-- OVERVIEW -->
   <div id="overview" class="section active">
-    <div class="section-heading">Kingdom Status</div>
+    <div class="sec-heading">Kingdom Status</div>
     <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-val">🔥 14</div>
-        <div class="stat-lbl">Day streak</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="week-xp">+320</div>
-        <div class="stat-lbl">XP this week</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-val" id="habits-done">3/5</div>
-        <div class="stat-lbl">Today's habits</div>
-      </div>
+      <div class="stat-box"><div class="stat-val">🔥 14</div><div class="stat-lbl">Day streak</div></div>
+      <div class="stat-box"><div class="stat-val">+320</div><div class="stat-lbl">XP this week</div></div>
+      <div class="stat-box"><div class="stat-val" id="ov-habits">—</div><div class="stat-lbl">Today's habits</div></div>
     </div>
-
-    <div class="section-heading">Domains</div>
+    <div class="sec-heading">Domains</div>
     <div class="domain-grid">
       <div class="domain-card" onclick="switchTab('habits')">
         <span class="domain-icon">⚔️</span>
         <div class="domain-label">Fitness</div>
         <div class="domain-score" style="color:var(--purple-light)">68</div>
-        <div class="domain-bar"><div class="domain-bar-fill db1" style="background:var(--purple)"></div></div>
+        <div class="domain-bar"><div class="domain-bar-fill" id="db1" style="background:var(--purple)"></div></div>
         <div class="domain-delta" style="color:var(--teal-light)">↑ +3 this week</div>
       </div>
       <div class="domain-card" onclick="switchTab('habits')">
         <span class="domain-icon">🔄</span>
         <div class="domain-label">Habits</div>
         <div class="domain-score" style="color:var(--teal-light)">74</div>
-        <div class="domain-bar"><div class="domain-bar-fill db2" style="background:var(--teal)"></div></div>
+        <div class="domain-bar"><div class="domain-bar-fill" id="db2" style="background:var(--teal)"></div></div>
         <div class="domain-delta" style="color:var(--teal-light)">↑ +5 this week</div>
       </div>
       <div class="domain-card" onclick="switchTab('persona')">
         <span class="domain-icon">📖</span>
         <div class="domain-label">Skills</div>
         <div class="domain-score" style="color:#EF9F27">55</div>
-        <div class="domain-bar"><div class="domain-bar-fill db3" style="background:#BA7517"></div></div>
+        <div class="domain-bar"><div class="domain-bar-fill" id="db3" style="background:#BA7517"></div></div>
         <div class="domain-delta" style="color:var(--text-dim)">→ No change</div>
       </div>
       <div class="domain-card" onclick="switchTab('finance')">
         <span class="domain-icon">👑</span>
         <div class="domain-label">Finances</div>
         <div class="domain-score" style="color:var(--gold)">61</div>
-        <div class="domain-bar"><div class="domain-bar-fill db4" style="background:var(--gold-dim)"></div></div>
+        <div class="domain-bar"><div class="domain-bar-fill" id="db4" style="background:var(--gold-dim)"></div></div>
         <div class="domain-delta" style="color:var(--teal-light)">↑ +2 this week</div>
       </div>
     </div>
-
-    <div class="section-heading">Today · <span class="today-badge">Mon 18 May</span></div>
-    <div style="background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;">
-      <div class="finance-row-item">
-        <span class="finance-row-label">Football training</span>
-        <span style="font-size:12px;color:var(--gold)">8–10pm</span>
-      </div>
-      <div class="finance-row-item">
-        <span class="finance-row-label">High fatigue risk after training</span>
-        <span style="font-size:11px;color:var(--coral)">⚠ Guard composure</span>
-      </div>
-      <div class="finance-row-item" style="border-bottom:none">
-        <span class="finance-row-label">Contract check · Sleep rule</span>
-        <span style="font-size:11px;color:var(--text-muted)">Phone out by 11pm</span>
-      </div>
+    <div class="sec-heading">Today</div>
+    <div class="card" style="padding:4px 14px">
+      <div class="log-row"><span class="log-desc">Football training</span><span style="font-size:12px;color:var(--gold)">8–10pm</span></div>
+      <div class="log-row"><span class="log-desc">High fatigue risk after training</span><span style="font-size:11px;color:var(--coral)">⚠ Guard composure</span></div>
+      <div class="log-row" style="border-bottom:none"><span class="log-desc">Contract · Sleep rule</span><span style="font-size:11px;color:var(--text-muted)">Phone out 11pm</span></div>
     </div>
   </div>
 
   <!-- HABITS -->
   <div id="habits" class="section">
-    <div class="section-heading">Daily Disciplines</div>
-
-    <div id="habit-list">
-      <div class="habit-item" onclick="toggleHabit(this, 20)">
-        <div class="habit-orb done">✓</div>
-        <div class="habit-body">
-          <div class="habit-name done">Morning prayer + scripture</div>
-          <div class="habit-streak">
-            <div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot hit"></div>
-            <div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot hit"></div>
-          </div>
-        </div>
-        <div class="habit-xp">+20 XP</div>
-      </div>
-      <div class="habit-item" onclick="toggleHabit(this, 15)">
-        <div class="habit-orb done">✓</div>
-        <div class="habit-body">
-          <div class="habit-name done">No phone · first 30 min</div>
-          <div class="habit-streak">
-            <div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot"></div>
-            <div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot"></div>
-          </div>
-        </div>
-        <div class="habit-xp">+15 XP</div>
-      </div>
-      <div class="habit-item" onclick="toggleHabit(this, 20)">
-        <div class="habit-orb"></div>
-        <div class="habit-body">
-          <div class="habit-name">Japanese · 20 min</div>
-          <div class="habit-streak">
-            <div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot hit"></div>
-            <div class="s-dot"></div><div class="s-dot hit"></div><div class="s-dot"></div><div class="s-dot hit"></div>
-          </div>
-        </div>
-        <div class="habit-xp">+20 XP</div>
-      </div>
-      <div class="habit-item" onclick="toggleHabit(this, 25)">
-        <div class="habit-orb"></div>
-        <div class="habit-body">
-          <div class="habit-name">Trading prep / review</div>
-          <div class="habit-streak">
-            <div class="s-dot hit"></div><div class="s-dot"></div><div class="s-dot hit"></div>
-            <div class="s-dot hit"></div><div class="s-dot"></div><div class="s-dot hit"></div><div class="s-dot hit"></div>
-          </div>
-        </div>
-        <div class="habit-xp">+25 XP</div>
-      </div>
-      <div class="habit-item" onclick="toggleHabit(this, 15)">
-        <div class="habit-orb"></div>
-        <div class="habit-body">
-          <div class="habit-name">Sleep by 11:30pm</div>
-          <div class="habit-streak">
-            <div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot hit"></div>
-            <div class="s-dot hit"></div><div class="s-dot"></div><div class="s-dot hit"></div><div class="s-dot hit"></div>
-          </div>
-        </div>
-        <div class="habit-xp">+15 XP</div>
-      </div>
-      <div class="habit-item" onclick="toggleHabit(this, 20)">
-        <div class="habit-orb"></div>
-        <div class="habit-body">
-          <div class="habit-name">Primers · prep or reflect</div>
-          <div class="habit-streak">
-            <div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot"></div>
-            <div class="s-dot hit"></div><div class="s-dot hit"></div><div class="s-dot"></div><div class="s-dot hit"></div>
-          </div>
-        </div>
-        <div class="habit-xp">+20 XP</div>
-      </div>
-    </div>
+    <div class="sec-heading">Daily Disciplines</div>
+    <div class="card" style="padding:4px 14px"><div id="habit-list"></div></div>
+    <button class="open-add-btn" onclick="openSheet('habit')">+ Add habit</button>
   </div>
 
   <!-- CONTRACT -->
   <div id="contract" class="section">
-    <div class="section-heading">Ulysses Contract</div>
-    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6;">Rules set before temptation. The king holds the line when the soldier wants to flee.</div>
-
-    <div class="contract-item" onclick="toggleContract(this)">
-      <div class="contract-box"></div>
-      <div>
-        <div class="contract-domain" style="color:var(--purple-light)">Attention</div>
-        <div class="contract-rule">I do not flee boredom. I face it, name it, and choose deliberately.</div>
-      </div>
-    </div>
-    <div class="contract-item" onclick="toggleContract(this)">
-      <div class="contract-box"></div>
-      <div>
-        <div class="contract-domain" style="color:var(--pink)">Lust</div>
-        <div class="contract-rule">The trigger is boredom. When I feel the pull, I name it — I do not feed it.</div>
-      </div>
-    </div>
-    <div class="contract-item" onclick="toggleContract(this)">
-      <div class="contract-box"></div>
-      <div>
-        <div class="contract-domain" style="color:var(--teal-light)">Sleep</div>
-        <div class="contract-rule">Phone leaves the bedroom at 11pm. No exceptions — including "just one video."</div>
-      </div>
-    </div>
-    <div class="contract-item" onclick="toggleContract(this)">
-      <div class="contract-box"></div>
-      <div>
-        <div class="contract-domain" style="color:var(--gold)">Finance</div>
-        <div class="contract-rule">No discretionary spend above $50 without the 24-hour rule.</div>
-      </div>
-    </div>
-    <div class="contract-item" onclick="toggleContract(this)">
-      <div class="contract-box"></div>
-      <div>
-        <div class="contract-domain" style="color:var(--coral)">Composure</div>
-        <div class="contract-rule">Under pressure I breathe first. I do not react to silence as rejection.</div>
-      </div>
-    </div>
-    <div class="contract-item" onclick="toggleContract(this)">
-      <div class="contract-box"></div>
-      <div>
-        <div class="contract-domain" style="color:var(--green)">Spiritual</div>
-        <div class="contract-rule">I meet God before I meet my phone. No scripture skipped because of "no time."</div>
-      </div>
-    </div>
-    <div class="contract-item" onclick="toggleContract(this)">
-      <div class="contract-box"></div>
-      <div>
-        <div class="contract-domain" style="color:var(--purple-light)">Identity</div>
-        <div class="contract-rule">I do not over-apologise or shrink to earn belonging. I already belong.</div>
-      </div>
-    </div>
+    <div class="sec-heading">Ulysses Contract</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;line-height:1.6">Rules set before temptation. The king holds the line when the soldier wants to flee.</div>
+    <div id="contract-list"></div>
+    <button class="open-add-btn" onclick="openSheet('contract')">+ Add rule</button>
   </div>
 
-  <!-- PERSONA MAP -->
+  <!-- PERSONA -->
   <div id="persona" class="section">
     <div class="persona-hero">
       <div class="persona-crest">👑</div>
       <div class="persona-title">The Strategic King</div>
       <div class="persona-sub">Composed under fire. Disciplined in the dark. Grounded in who he is. Moves with intention, not impulse. Leads from strength, not need.</div>
-      <div class="persona-progress">Overall alignment · 64%</div>
+      <div class="persona-pct">Overall alignment · 64%</div>
       <div class="overall-bar"><div class="overall-fill" id="overall-fill"></div></div>
     </div>
-
     <div class="arch-row">
       <div class="arch-pill purple">Composed Leader</div>
       <div class="arch-pill teal">Disciplined Warrior</div>
       <div class="arch-pill gold">Grounded King</div>
     </div>
-
-    <div class="trait-section">
-      <div class="trait-heading">Core traits · current vs target</div>
-
-      <div class="trait-item">
-        <div class="trait-row">
-          <span class="trait-name">Composure under pressure</span>
-          <span class="trait-pct" style="color:var(--purple-light)">62%</span>
-        </div>
-        <div class="trait-track"><div class="trait-fill tf1" style="background:var(--purple)"></div></div>
-        <div class="trait-gap">Gap: 38pts · Focus: post-football debrief</div>
-      </div>
-
-      <div class="trait-item">
-        <div class="trait-row">
-          <span class="trait-name">Spiritual consistency</span>
-          <span class="trait-pct" style="color:var(--green)">78%</span>
-        </div>
-        <div class="trait-track"><div class="trait-fill tf2" style="background:var(--green)"></div></div>
-        <div class="trait-gap">Gap: 22pts · Strongest domain</div>
-      </div>
-
-      <div class="trait-item">
-        <div class="trait-row">
-          <span class="trait-name">Financial discipline</span>
-          <span class="trait-pct" style="color:var(--gold)">71%</span>
-        </div>
-        <div class="trait-track"><div class="trait-fill tf3" style="background:var(--gold-dim)"></div></div>
-        <div class="trait-gap">Gap: 29pts · 24hr rule holding</div>
-      </div>
-
-      <div class="trait-item">
-        <div class="trait-row">
-          <span class="trait-name">Identity security · no-approval mode</span>
-          <span class="trait-pct" style="color:var(--coral)">48%</span>
-        </div>
-        <div class="trait-track"><div class="trait-fill tf4" style="background:var(--coral)"></div></div>
-        <div class="trait-gap">Gap: 52pts · Root work — biggest lever</div>
-      </div>
-
-      <div class="trait-item">
-        <div class="trait-row">
-          <span class="trait-name">Leadership presence</span>
-          <span class="trait-pct" style="color:var(--purple-light)">75%</span>
-        </div>
-        <div class="trait-track"><div class="trait-fill tf5" style="background:var(--purple)"></div></div>
-        <div class="trait-gap">Gap: 25pts · Strong in Primers context</div>
-      </div>
-
-      <div class="trait-item">
-        <div class="trait-row">
-          <span class="trait-name">Physical readiness</span>
-          <span class="trait-pct" style="color:var(--teal-light)">65%</span>
-        </div>
-        <div class="trait-track"><div class="trait-fill tf6" style="background:var(--teal)"></div></div>
-        <div class="trait-gap">Gap: 35pts · Fatigue is the multiplier</div>
-      </div>
-
-      <div class="trait-item">
-        <div class="trait-row">
-          <span class="trait-name">Strategic thinking · trading</span>
-          <span class="trait-pct" style="color:#EF9F27">55%</span>
-        </div>
-        <div class="trait-track"><div class="trait-fill tf7" style="background:#BA7517"></div></div>
-        <div class="trait-gap">Gap: 45pts · Discipline over impulse</div>
-      </div>
-    </div>
-
-    <div class="trait-section">
-      <div class="trait-heading">What the king does differently</div>
-      <div style="background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;">
-        <div class="finance-row-item">
-          <span style="font-size:13px;color:var(--text-dim)">Sits with discomfort instead of fleeing</span>
-        </div>
-        <div class="finance-row-item">
-          <span style="font-size:13px;color:var(--text-dim)">Leads from identity, not from approval</span>
-        </div>
-        <div class="finance-row-item">
-          <span style="font-size:13px;color:var(--text-dim)">Breathes before he reacts</span>
-        </div>
-        <div class="finance-row-item">
-          <span style="font-size:13px;color:var(--text-dim)">Recovers physically so his mind stays sharp</span>
-        </div>
-        <div class="finance-row-item" style="border-bottom:none">
-          <span style="font-size:13px;color:var(--text-dim)">Builds wealth quietly, spends with intention</span>
-        </div>
-      </div>
-    </div>
+    <div class="sec-heading">Core traits</div>
+    <div id="trait-list"></div>
+    <button class="open-add-btn" onclick="openSheet('trait')">+ Add trait</button>
   </div>
 
   <!-- FINANCE -->
   <div id="finance" class="section">
-    <div class="section-heading">Financial Kingdom</div>
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-      <div class="finance-card">
-        <div class="finance-label">Monthly savings</div>
-        <div class="finance-val" style="color:var(--teal-light)">$0</div>
-        <div class="finance-sub">Set your target</div>
-      </div>
-      <div class="finance-card">
-        <div class="finance-label">Trading P&L · May</div>
-        <div class="finance-val" style="color:var(--gold)">$0</div>
-        <div class="finance-sub">Log your trades</div>
-      </div>
+    <div class="sec-heading">Financial Kingdom</div>
+    <div class="fin-tabs">
+      <button class="fin-tab active" onclick="switchFinTab('overview')">Overview</button>
+      <button class="fin-tab" onclick="switchFinTab('trading')">Trading</button>
+      <button class="fin-tab" onclick="switchFinTab('spending')">Spending</button>
+      <button class="fin-tab" onclick="switchFinTab('rules')">Rules</button>
     </div>
 
-    <div class="section-heading">Rules in force</div>
-    <div style="background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:16px;">
-      <div class="finance-row-item">
-        <span class="finance-row-label">$50 / 24-hour rule</span>
-        <span style="font-size:11px;color:var(--teal-light)">Active</span>
+    <div class="fin-section active" id="fin-overview">
+      <div class="fin-grid">
+        <div class="fin-card"><div class="fin-label">Net P&L · May</div><div class="fin-val" id="fin-pnl" style="color:var(--teal-light)">$0</div><div class="fin-sub">Trading</div></div>
+        <div class="fin-card"><div class="fin-label">Spent · May</div><div class="fin-val" id="fin-spent" style="color:var(--coral)">$0</div><div class="fin-sub">Discretionary</div></div>
+        <div class="fin-card"><div class="fin-label">Win rate</div><div class="fin-val" id="fin-wr" style="color:var(--purple-light)">—</div><div class="fin-sub">This month</div></div>
+        <div class="fin-card"><div class="fin-label">Trades logged</div><div class="fin-val" id="fin-tc" style="color:var(--gold)">0</div><div class="fin-sub">May total</div></div>
       </div>
-      <div class="finance-row-item">
-        <span class="finance-row-label">Monthly finance review</span>
-        <span style="font-size:11px;color:var(--text-muted)">Last Sunday</span>
-      </div>
-      <div class="finance-row-item" style="border-bottom:none">
-        <span class="finance-row-label">Trading nights</span>
-        <span style="font-size:11px;color:var(--gold)">Tue · Thu only</span>
-      </div>
+      <div class="sec-heading">Recent entries</div>
+      <div class="card" style="padding:4px 14px"><div id="fin-recent"></div></div>
     </div>
 
-    <div class="section-heading">Log an entry</div>
-    <div style="background:var(--dark2);border:0.5px solid var(--border);border-radius:var(--radius);padding:14px;">
-      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">Quick log — impulse spend check</div>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="spend-desc" placeholder="What did you buy?" style="flex:1;background:var(--dark4);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;">
-        <input type="number" id="spend-amt" placeholder="$" style="width:70px;background:var(--dark4);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-size:13px;font-family:'Inter',sans-serif;outline:none;">
+    <div class="fin-section" id="fin-trading">
+      <div class="fin-grid">
+        <div class="fin-card"><div class="fin-label">Total P&L</div><div class="fin-val" id="trade-pnl" style="color:var(--teal-light)">$0</div><div class="fin-sub" id="trade-sub">0 trades</div></div>
+        <div class="fin-card"><div class="fin-label">Win / Loss</div><div class="fin-val" id="trade-wr" style="color:var(--purple-light)">—</div><div class="fin-sub" id="trade-wl">0W · 0L</div></div>
       </div>
-      <button class="log-btn" onclick="logSpend()">Log spend</button>
+      <div class="sec-heading">Trade log</div>
+      <div class="card" style="padding:4px 14px"><div id="trade-list"></div></div>
+      <button class="open-add-btn" onclick="openSheet('trade')">+ Log trade</button>
+    </div>
+
+    <div class="fin-section" id="fin-spending">
+      <div class="card" style="padding:4px 14px;margin-bottom:10px"><div id="spend-list"></div></div>
+      <button class="open-add-btn" onclick="openSheet('spend')">+ Log spend</button>
+    </div>
+
+    <div class="fin-section" id="fin-rules">
+      <div class="card" style="padding:4px 14px">
+        <div class="rule-row"><span class="rule-label">$50 / 24-hour rule</span><span class="rule-val">Active</span></div>
+        <div class="rule-row"><span class="rule-label">Monthly finance review</span><span class="rule-val">Last Sunday</span></div>
+        <div class="rule-row"><span class="rule-label">Trading nights</span><span class="rule-val">Tue · Thu only</span></div>
+        <div class="rule-row"><span class="rule-label">Go/no-go check before every trade</span><span class="rule-val">Required</span></div>
+        <div class="rule-row" style="border-bottom:none"><span class="rule-label">No trading after 11pm SGT</span><span class="rule-val">Hard stop</span></div>
+      </div>
     </div>
   </div>
 
 </div>
 
-<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <button class="bn-item active" id="bn-overview" onclick="switchTab('overview')">
-    <span class="bn-icon">⬡</span>
-    <span>Overview</span>
-  </button>
-  <button class="bn-item" id="bn-habits" onclick="switchTab('habits')">
-    <span class="bn-icon">◎</span>
-    <span>Habits</span>
-  </button>
-  <button class="bn-item" id="bn-contract" onclick="switchTab('contract')">
-    <span class="bn-icon">⬟</span>
-    <span>Contract</span>
-  </button>
-  <button class="bn-item" id="bn-persona" onclick="switchTab('persona')">
-    <span class="bn-icon">♔</span>
-    <span>Persona</span>
-  </button>
-  <button class="bn-item" id="bn-finance" onclick="switchTab('finance')">
-    <span class="bn-icon">◈</span>
-    <span>Finance</span>
-  </button>
+  <button class="bn-item active" id="bn-overview" onclick="switchTab('overview')"><span class="bn-icon">⬡</span><span>Overview</span></button>
+  <button class="bn-item" id="bn-habits" onclick="switchTab('habits')"><span class="bn-icon">◎</span><span>Habits</span></button>
+  <button class="bn-item" id="bn-contract" onclick="switchTab('contract')"><span class="bn-icon">⬟</span><span>Contract</span></button>
+  <button class="bn-item" id="bn-persona" onclick="switchTab('persona')"><span class="bn-icon">♔</span><span>Persona</span></button>
+  <button class="bn-item" id="bn-finance" onclick="switchTab('finance')"><span class="bn-icon">◈</span><span>Finance</span></button>
 </div>
 
 <script>
-  const tabs = ['overview','habits','contract','persona','finance'];
-  let totalXP = 2340;
-  let habitsDone = 2;
-  const totalHabits = 6;
+const S = {
+  xp: 2340,
+  nextId: 100,
+  habits: [
+    {id:1,name:'Morning prayer + scripture',xp:20,done:true,streak:[1,1,1,1,1,1,1]},
+    {id:2,name:'No phone · first 30 min',xp:15,done:true,streak:[1,1,0,1,1,1,0]},
+    {id:3,name:'Japanese · 20 min',xp:20,done:false,streak:[1,1,1,0,1,0,1]},
+    {id:4,name:'Trading prep / review',xp:25,done:false,streak:[1,0,1,1,0,1,1]},
+    {id:5,name:'Sleep by 11:30pm',xp:15,done:false,streak:[1,1,1,1,0,1,1]},
+    {id:6,name:'Primers · prep or reflect',xp:20,done:false,streak:[1,1,0,1,1,0,1]},
+  ],
+  contracts: [
+    {id:1,domain:'Attention',color:'var(--purple-light)',rule:'I do not flee boredom. I face it, name it, and choose deliberately.',done:false},
+    {id:2,domain:'Lust',color:'var(--pink)',rule:'The trigger is boredom. When I feel the pull, I name it — I do not feed it.',done:false},
+    {id:3,domain:'Sleep',color:'var(--teal-light)',rule:'Phone leaves the bedroom at 11pm. No exceptions — including "just one video."',done:false},
+    {id:4,domain:'Finance',color:'var(--gold)',rule:'No discretionary spend above $50 without the 24-hour rule.',done:false},
+    {id:5,domain:'Composure',color:'var(--coral)',rule:'Under pressure I breathe first. I do not react to silence as rejection.',done:false},
+    {id:6,domain:'Spiritual',color:'var(--green)',rule:'I meet God before I meet my phone. No scripture skipped.',done:false},
+    {id:7,domain:'Identity',color:'var(--purple-light)',rule:'I do not over-apologise or shrink to earn belonging. I already belong.',done:false},
+  ],
+  traits: [
+    {id:1,name:'Composure under pressure',pct:62,color:'var(--purple)',gap:'Root work ongoing'},
+    {id:2,name:'Spiritual consistency',pct:78,color:'var(--green)',gap:'Strongest domain'},
+    {id:3,name:'Financial discipline',pct:71,color:'var(--gold-dim)',gap:'24hr rule holding'},
+    {id:4,name:'Identity security',pct:48,color:'var(--coral)',gap:'Biggest lever'},
+    {id:5,name:'Leadership presence',pct:75,color:'var(--purple)',gap:'Strong in Primers'},
+    {id:6,name:'Physical readiness',pct:65,color:'var(--teal)',gap:'Fatigue multiplier'},
+    {id:7,name:'Strategic thinking',pct:55,color:'#BA7517',gap:'Discipline over impulse'},
+  ],
+  trades: [],
+  spends: [],
+};
 
-  function switchTab(id) {
-    tabs.forEach(t => {
-      document.getElementById(t).classList.toggle('active', t === id);
-      document.querySelectorAll('.nav-item')[tabs.indexOf(t)].classList.toggle('active', t === id);
-      const bn = document.getElementById('bn-' + t);
-      if (bn) bn.classList.toggle('active', t === id);
-    });
+const TABS = ['overview','habits','contract','persona','finance'];
+function switchTab(id) {
+  TABS.forEach(t => {
+    document.getElementById(t).classList.toggle('active', t===id);
+    document.querySelectorAll('.nav-item')[TABS.indexOf(t)].classList.toggle('active', t===id);
+    const bn = document.getElementById('bn-'+t);
+    if(bn) bn.classList.toggle('active', t===id);
+  });
+}
+
+const FIN_TABS = ['overview','trading','spending','rules'];
+function switchFinTab(id) {
+  FIN_TABS.forEach(t => {
+    document.getElementById('fin-'+t).classList.toggle('active', t===id);
+    document.querySelectorAll('.fin-tab')[FIN_TABS.indexOf(t)].classList.toggle('active', t===id);
+  });
+}
+
+// ── HABITS ──
+function renderHabits() {
+  const el = document.getElementById('habit-list');
+  if(!S.habits.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center">No habits yet — add one below</div>';return;}
+  el.innerHTML = S.habits.map(h=>`
+    <div class="habit-item">
+      <div class="habit-orb ${h.done?'done':''}" onclick="toggleHabit(${h.id})">${h.done?'✓':''}</div>
+      <div class="habit-body">
+        <div class="habit-name ${h.done?'done':''}">${h.name}</div>
+        <div class="habit-streak">${h.streak.map(s=>`<div class="s-dot ${s?'hit':''}"></div>`).join('')}</div>
+      </div>
+      <span class="habit-xp">+${h.xp} XP</span>
+      <button class="del-btn" onclick="delHabit(${h.id})">×</button>
+    </div>`).join('');
+  const done = S.habits.filter(h=>h.done).length;
+  document.getElementById('ov-habits').textContent = done+'/'+S.habits.length;
+}
+
+function toggleHabit(id) {
+  const h = S.habits.find(x=>x.id===id);
+  if(!h) return;
+  h.done=!h.done;
+  S.xp += h.done ? h.xp : -h.xp;
+  if(h.done) toast('+'+h.xp+' XP · '+h.name.split('·')[0].trim());
+  updateXP(); renderHabits();
+}
+
+function delHabit(id) {
+  const h = S.habits.find(x=>x.id===id);
+  if(h&&h.done) S.xp-=h.xp;
+  S.habits=S.habits.filter(x=>x.id!==id);
+  updateXP(); renderHabits();
+}
+
+// ── CONTRACT ──
+function renderContract() {
+  const el = document.getElementById('contract-list');
+  if(!S.contracts.length){el.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center">No rules yet</div>';return;}
+  el.innerHTML = S.contracts.map(c=>`
+    <div class="contract-item ${c.done?'upheld':''}">
+      <div class="contract-box ${c.done?'done':''}" onclick="toggleContract(${c.id})">${c.done?'✓':''}</div>
+      <div class="contract-body" onclick="toggleContract(${c.id})">
+        <div class="contract-domain" style="color:${c.color}">${c.domain}</div>
+        <div class="contract-rule">${c.rule}</div>
+      </div>
+      <button class="del-btn" onclick="delContract(${c.id})">×</button>
+    </div>`).join('');
+}
+
+function toggleContract(id) {
+  const c=S.contracts.find(x=>x.id===id);
+  if(!c) return;
+  c.done=!c.done;
+  S.xp+=c.done?10:-10;
+  if(c.done) toast('+10 XP · '+c.domain+' rule upheld');
+  updateXP(); renderContract();
+}
+
+function delContract(id) {
+  const c=S.contracts.find(x=>x.id===id);
+  if(c&&c.done) S.xp-=10;
+  S.contracts=S.contracts.filter(x=>x.id!==id);
+  updateXP(); renderContract();
+}
+
+// ── TRAITS ──
+function renderTraits() {
+  const el = document.getElementById('trait-list');
+  el.innerHTML = S.traits.map(t=>`
+    <div class="trait-item">
+      <div class="trait-body">
+        <div class="trait-row">
+          <span class="trait-name">${t.name}</span>
+          <span class="trait-pct" style="color:${t.color}">${t.pct}%</span>
+        </div>
+        <div class="trait-track"><div class="trait-fill" style="background:${t.color};width:${t.pct}%"></div></div>
+        <div class="trait-gap">${t.gap}</div>
+      </div>
+      <button class="del-btn" style="margin-top:2px" onclick="delTrait(${t.id})">×</button>
+    </div>`).join('');
+}
+
+function delTrait(id){S.traits=S.traits.filter(x=>x.id!==id);renderTraits();}
+
+// ── FINANCE ──
+function renderFinance() {
+  const pnl = S.trades.reduce((s,t)=>s+t.pnl,0);
+  const spent = S.spends.reduce((s,x)=>s+x.amt,0);
+  const wins = S.trades.filter(t=>t.pnl>0).length;
+  const losses = S.trades.filter(t=>t.pnl<=0).length;
+  const wr = S.trades.length ? Math.round((wins/S.trades.length)*100)+'%' : '—';
+
+  document.getElementById('fin-pnl').textContent = fmt(pnl);
+  document.getElementById('fin-pnl').style.color = pnl>=0?'var(--teal-light)':'var(--coral)';
+  document.getElementById('fin-spent').textContent = '$'+Math.round(spent);
+  document.getElementById('fin-wr').textContent = wr;
+  document.getElementById('fin-tc').textContent = S.trades.length;
+  document.getElementById('trade-pnl').textContent = fmt(pnl);
+  document.getElementById('trade-pnl').style.color = pnl>=0?'var(--teal-light)':'var(--coral)';
+  document.getElementById('trade-sub').textContent = S.trades.length+' trade'+(S.trades.length!==1?'s':'');
+  document.getElementById('trade-wr').textContent = wr;
+  document.getElementById('trade-wl').textContent = wins+'W · '+losses+'L';
+
+  const empty = '<div style="font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center">';
+
+  document.getElementById('trade-list').innerHTML = S.trades.length
+    ? S.trades.slice().reverse().map(t=>`
+      <div class="log-row">
+        <span class="log-tag tag-trade">${t.ticker}</span>
+        <span class="log-desc">${t.side}${t.note?' · '+t.note:''}</span>
+        <span class="log-amt" style="color:${t.pnl>=0?'var(--teal-light)':'var(--coral)'}">${fmt(t.pnl)}</span>
+        <button class="del-btn" onclick="delTrade(${t.id})">×</button>
+      </div>`).join('')
+    : empty+'No trades logged yet</div>';
+
+  document.getElementById('spend-list').innerHTML = S.spends.length
+    ? S.spends.slice().reverse().map(s=>`
+      <div class="log-row">
+        <span class="log-tag tag-spend">${s.cat}</span>
+        <span class="log-desc">${s.desc}</span>
+        <span class="log-amt" style="color:var(--coral)">-$${Math.round(s.amt)}</span>
+        <button class="del-btn" onclick="delSpend(${s.id})">×</button>
+      </div>`).join('')
+    : empty+'No spend logged yet</div>';
+
+  const all = [...S.trades.map(t=>({...t,type:'trade'})),...S.spends.map(s=>({...s,type:'spend'}))]
+    .sort((a,b)=>b.id-a.id).slice(0,6);
+  document.getElementById('fin-recent').innerHTML = all.length
+    ? all.map(e=>e.type==='trade'
+      ? `<div class="log-row"><span class="log-tag tag-trade">${e.ticker}</span><span class="log-desc">${e.side}${e.note?' · '+e.note:''}</span><span class="log-amt" style="color:${e.pnl>=0?'var(--teal-light)':'var(--coral)'}">${fmt(e.pnl)}</span></div>`
+      : `<div class="log-row"><span class="log-tag tag-spend">${e.cat}</span><span class="log-desc">${e.desc}</span><span class="log-amt" style="color:var(--coral)">-$${Math.round(e.amt)}</span></div>`
+    ).join('')
+    : empty+'No entries yet</div>';
+}
+
+function fmt(v){return (v>=0?'+$':'-$')+Math.abs(v).toFixed(0);}
+function delTrade(id){S.trades=S.trades.filter(x=>x.id!==id);renderFinance();}
+function delSpend(id){S.spends=S.spends.filter(x=>x.id!==id);renderFinance();}
+
+// ── SHEET ──
+let sheetType=null;
+function openSheet(type) {
+  sheetType=type;
+  document.getElementById('sheet-title').textContent = {
+    habit:'Add habit',contract:'Add rule',trait:'Add trait',trade:'Log trade',spend:'Log spend'
+  }[type];
+  const b = document.getElementById('sheet-body');
+  if(type==='habit') b.innerHTML=`
+    <input class="sheet-input" id="si-name" placeholder="Habit name (e.g. Cold shower)"/>
+    <div class="sheet-row">
+      <input class="sheet-input" id="si-xp" type="number" placeholder="XP reward" value="20" style="margin-bottom:0"/>
+    </div>
+    <div class="sheet-btns">
+      <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+      <button class="sheet-confirm" onclick="confirm()">Add Habit</button>
+    </div>`;
+  else if(type==='contract') b.innerHTML=`
+    <input class="sheet-input" id="si-domain" placeholder="Domain (e.g. Sleep, Relational)"/>
+    <input class="sheet-input" id="si-rule" placeholder="The rule in your own words"/>
+    <div class="sheet-btns">
+      <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+      <button class="sheet-confirm" onclick="confirm()">Add Rule</button>
+    </div>`;
+  else if(type==='trait') b.innerHTML=`
+    <input class="sheet-input" id="si-trait" placeholder="Trait (e.g. Patience under criticism)"/>
+    <div class="sheet-row">
+      <input class="sheet-input" id="si-pct" type="number" min="0" max="100" placeholder="Current %" value="50" style="margin-bottom:0"/>
+    </div>
+    <input class="sheet-input" id="si-gap" placeholder="Note (e.g. Working on this)" style="margin-top:10px"/>
+    <div class="sheet-btns">
+      <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+      <button class="sheet-confirm" onclick="confirm()">Add Trait</button>
+    </div>`;
+  else if(type==='trade') b.innerHTML=`
+    <input class="sheet-input" id="si-ticker" placeholder="Ticker (e.g. SPY 0DTE)"/>
+    <div class="sheet-row">
+      <select class="sheet-select" id="si-side"><option>Long</option><option>Short</option></select>
+      <input class="sheet-input" id="si-pnl" type="number" placeholder="P&L ($, use - for loss)" style="flex:1;margin-bottom:0"/>
+    </div>
+    <input class="sheet-input" id="si-note" placeholder="Note (optional)" style="margin-top:10px"/>
+    <div class="sheet-btns">
+      <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+      <button class="sheet-confirm" onclick="confirm()">Log Trade</button>
+    </div>`;
+  else if(type==='spend') b.innerHTML=`
+    <input class="sheet-input" id="si-desc" placeholder="What was it?"/>
+    <div class="sheet-row">
+      <select class="sheet-select" id="si-cat"><option>Food</option><option>Transport</option><option>Entertainment</option><option>Shopping</option><option>Other</option></select>
+      <input class="sheet-input" id="si-amt" type="number" placeholder="Amount ($)" style="flex:1;margin-bottom:0"/>
+    </div>
+    <div class="sheet-btns">
+      <button class="sheet-cancel" onclick="closeSheet()">Cancel</button>
+      <button class="sheet-confirm" onclick="confirm()">Log Spend</button>
+    </div>`;
+  document.getElementById('sheet-overlay').classList.add('open');
+  setTimeout(()=>{const f=b.querySelector('input');if(f)f.focus();},300);
+}
+
+function closeSheet(){document.getElementById('sheet-overlay').classList.remove('open');}
+
+document.getElementById('sheet-overlay').addEventListener('click',function(e){
+  if(e.target===this) closeSheet();
+});
+
+function confirm() {
+  const id=++S.nextId;
+  const COLORS=['var(--purple-light)','var(--teal-light)','var(--gold)','var(--coral)','var(--green)','var(--pink)'];
+  if(sheetType==='habit'){
+    const name=document.getElementById('si-name').value.trim();
+    const xp=parseInt(document.getElementById('si-xp').value)||20;
+    if(!name) return;
+    S.habits.push({id,name,xp,done:false,streak:[0,0,0,0,0,0,0]});
+    renderHabits(); toast('Habit added · +'+xp+' XP per day');
+  } else if(sheetType==='contract'){
+    const domain=document.getElementById('si-domain').value.trim();
+    const rule=document.getElementById('si-rule').value.trim();
+    if(!domain||!rule) return;
+    S.contracts.push({id,domain,color:COLORS[S.contracts.length%COLORS.length],rule,done:false});
+    renderContract(); toast('Rule locked in');
+  } else if(sheetType==='trait'){
+    const name=document.getElementById('si-trait').value.trim();
+    const pct=Math.min(100,Math.max(0,parseInt(document.getElementById('si-pct').value)||50));
+    const gap=document.getElementById('si-gap').value.trim()||'In progress';
+    if(!name) return;
+    const tc=['var(--purple)','var(--teal)','var(--gold-dim)','var(--coral)','var(--green)'];
+    S.traits.push({id,name,pct,color:tc[S.traits.length%tc.length],gap});
+    renderTraits(); toast('Trait added');
+  } else if(sheetType==='trade'){
+    const ticker=document.getElementById('si-ticker').value.trim().toUpperCase();
+    const side=document.getElementById('si-side').value;
+    const pnl=parseFloat(document.getElementById('si-pnl').value)||0;
+    const note=document.getElementById('si-note').value.trim();
+    if(!ticker) return;
+    S.trades.push({id,ticker,side,pnl,note});
+    renderFinance(); toast('Trade logged · '+fmt(pnl));
+  } else if(sheetType==='spend'){
+    const desc=document.getElementById('si-desc').value.trim();
+    const cat=document.getElementById('si-cat').value;
+    const amt=parseFloat(document.getElementById('si-amt').value)||0;
+    if(!desc||!amt) return;
+    if(amt>50){toast('⚠ $50 rule — sit on it 24hrs');return;}
+    S.spends.push({id,desc,cat,amt});
+    renderFinance(); toast('Spend logged · -$'+Math.round(amt));
   }
+  closeSheet();
+}
 
-  function toggleHabit(el, xp) {
-    const orb = el.querySelector('.habit-orb');
-    const name = el.querySelector('.habit-name');
-    const done = orb.classList.toggle('done');
-    if (done) {
-      orb.textContent = '✓';
-      name.classList.add('done');
-      habitsDone++;
-      totalXP += xp;
-      showToast('+' + xp + ' XP');
-    } else {
-      orb.textContent = '';
-      name.classList.remove('done');
-      habitsDone = Math.max(0, habitsDone - 1);
-      totalXP -= xp;
-    }
-    updateXP();
-    document.getElementById('habits-done').textContent = habitsDone + '/' + totalHabits;
-  }
+// ── XP ──
+function updateXP() {
+  const pct=Math.min(100,Math.round((S.xp/3000)*100));
+  document.getElementById('xp-fill').style.width=pct+'%';
+  document.getElementById('xp-label').textContent=S.xp.toLocaleString()+' / 3,000';
+}
 
-  function toggleContract(el) {
-    const box = el.querySelector('.contract-box');
-    const done = box.classList.toggle('done');
-    if (done) {
-      box.textContent = '✓';
-      el.classList.add('upheld');
-      totalXP += 10;
-      showToast('+10 XP · Rule upheld');
-    } else {
-      box.textContent = '';
-      el.classList.remove('upheld');
-      totalXP -= 10;
-    }
-    updateXP();
-  }
+function toast(msg) {
+  const t=document.getElementById('xp-toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2400);
+}
 
-  function updateXP() {
-    const max = 3000;
-    const pct = Math.min(100, Math.round((totalXP / max) * 100));
-    document.getElementById('xp-fill').style.width = pct + '%';
-    document.getElementById('xp-label').textContent = totalXP.toLocaleString() + ' / ' + max.toLocaleString();
-  }
-
-  function showToast(msg) {
-    const t = document.getElementById('xp-toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2000);
-  }
-
-  function logSpend() {
-    const desc = document.getElementById('spend-desc').value;
-    const amt = parseFloat(document.getElementById('spend-amt').value);
-    if (!desc || isNaN(amt)) return;
-    if (amt > 50) {
-      showToast('⚠ $50 rule — wait 24hrs');
-    } else {
-      showToast('Logged · $' + amt.toFixed(2));
-    }
-    document.getElementById('spend-desc').value = '';
-    document.getElementById('spend-amt').value = '';
-  }
-
-  // Animate bars on load
-  setTimeout(() => {
-    document.getElementById('xp-fill').style.width = '78%';
-    document.getElementById('overall-fill').style.width = '64%';
-    document.querySelectorAll('.db1,.db2,.db3,.db4').forEach((el, i) => {
-      el.style.width = ['68%','74%','55%','61%'][i];
-    });
-    ['62%','78%','71%','48%','75%','65%','55%'].forEach((w, i) => {
-      const el = document.querySelector('.tf' + (i+1));
-      if (el) el.style.width = w;
-    });
-  }, 300);
+// ── INIT ──
+setTimeout(()=>{
+  document.getElementById('xp-fill').style.width='78%';
+  document.getElementById('overall-fill').style.width='64%';
+  [['db1','68%'],['db2','74%'],['db3','55%'],['db4','61%']].forEach(([id,w])=>document.getElementById(id).style.width=w);
+  renderHabits(); renderContract(); renderTraits(); renderFinance();
+},200);
 </script>
 </body>
 </html>
