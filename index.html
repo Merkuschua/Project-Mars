@@ -137,6 +137,20 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .rest-toggle.active{border-color:var(--purple);color:var(--purple-light);background:rgba(107,79,187,0.1)}
 .open-add-btn{width:100%;padding:10px;border:0.5px dashed var(--border-bright);border-radius:var(--radius-sm);background:none;color:var(--text-dim);font-size:12px;font-family:'Inter',sans-serif;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;margin-top:8px}
 .open-add-btn:hover{border-color:var(--gold);color:var(--gold)}
+/* EXPORT BTN */
+.export-btn{width:100%;padding:10px 14px;border:0.5px solid var(--border-bright);border-radius:var(--radius-sm);background:none;color:var(--text-dim);font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;text-align:left;transition:all 0.2s;letter-spacing:0.03em}
+.export-btn:hover{background:var(--dark3);color:var(--text)}
+/* BACKDATE */
+.bd-date-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.bd-date-btn{padding:6px 12px;border-radius:20px;font-size:12px;border:0.5px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s}
+.bd-date-btn:hover,.bd-date-btn.active{border-color:var(--teal);color:var(--teal-light);background:rgba(42,157,143,0.1)}
+.bd-habit-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);cursor:pointer}
+.bd-habit-row:last-child{border-bottom:none}
+.bd-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--text-muted);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all 0.2s}
+.bd-check.done{background:var(--teal);border-color:var(--teal);color:white}
+.bd-name{font-size:13px;color:var(--text-dim);flex:1}
+.past-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px}
+.past-row:last-child{border-bottom:none}
 .move-picker{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:0.5px solid var(--border)}
 .move-lbl{font-size:10px;color:var(--text-muted);width:100%}
 .move-opt{padding:4px 10px;border-radius:20px;font-size:11px;border:0.5px solid var(--border);background:none;color:var(--text-dim);cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s}
@@ -454,16 +468,52 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
   </div>
 
+  <!-- SETTINGS -->
+  <div id="settings" class="section">
+    <div class="sec-heading">Log Past Habits</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px;line-height:1.6">Been doing the work before the app existed. Log it here — it counts toward your streaks.</div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px">Select a past date:</div>
+      <div class="bd-date-row" id="bd-date-row"></div>
+      <div style="font-size:12px;color:var(--text-dim);margin:14px 0 8px">Which habits did you complete?</div>
+      <div id="bd-habit-list"></div>
+      <button class="open-add-btn" style="margin-top:12px;border-color:var(--teal);color:var(--teal-light)" onclick="saveBackdate()">✓ Save past entry</button>
+    </div>
+    <div class="sec-heading">Past Entries</div>
+    <div class="card" style="padding:4px 14px"><div id="past-log-list"></div></div>
+    <div class="sec-heading">Export Data</div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:1.6">Download your data anytime. Use for backup, spreadsheet review, or future Supabase migration.</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <button class="export-btn" onclick="exportJSON()">📦 Export full backup · JSON</button>
+        <button class="export-btn" onclick="exportHabitsCSV()">📊 Export habit log · CSV</button>
+        <button class="export-btn" onclick="exportTradesCSV()">📈 Export trade log · CSV</button>
+        <button class="export-btn" onclick="exportSpendsCSV()">💳 Export spend log · CSV</button>
+      </div>
+    </div>
+    <div class="sec-heading">Restore from Backup</div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">Paste a JSON backup to restore all data. This overwrites current data.</div>
+      <textarea id="import-json" rows="3" placeholder="Paste backup JSON here..." style="width:100%;background:var(--dark4);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:10px;color:var(--text);font-size:12px;font-family:'Inter',sans-serif;outline:none;resize:none;margin-bottom:8px"></textarea>
+      <button class="export-btn" style="border-color:var(--coral);color:var(--coral)" onclick="importJSON()">⚠ Restore from backup</button>
+    </div>
+    <div class="sec-heading">Danger Zone</div>
+    <div class="card">
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px">Reset everything. Export a backup first.</div>
+      <button class="export-btn" style="border-color:var(--red);color:var(--red)" onclick="resetAll()">🗑 Reset all data</button>
+    </div>
+  </div>
+
+
 </div>
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <button class="bn-item active" id="bn-overview" onclick="switchTab('overview')"><span class="bn-icon">⬡</span><span>Overview</span></button>
+  <button class="bn-item active" id="bn-overview" onclick="switchTab('overview')"><span class="bn-icon">⬡</span><span>Home</span></button>
   <button class="bn-item" id="bn-habits" onclick="switchTab('habits')"><span class="bn-icon">◎</span><span>Habits</span></button>
   <button class="bn-item" id="bn-stats" onclick="switchTab('stats')"><span class="bn-icon">◈</span><span>Stats</span></button>
-  <button class="bn-item" id="bn-contract" onclick="switchTab('contract')"><span class="bn-icon">⬟</span><span>Contract</span></button>
-  <button class="bn-item" id="bn-persona" onclick="switchTab('persona')"><span class="bn-icon">♔</span><span>Persona</span></button>
   <button class="bn-item" id="bn-finance" onclick="switchTab('finance')"><span class="bn-icon">💰</span><span>Finance</span></button>
+  <button class="bn-item" id="bn-settings" onclick="switchTab('settings')"><span class="bn-icon">⚙️</span><span>Settings</span></button>
 </div>
 
 <script>
@@ -556,21 +606,28 @@ const S = {
 })();
 
 // ── TABS ──
-const TABS=['overview','habits','stats','contract','persona','finance'];
+const TABS=['overview','habits','stats','contract','persona','finance','settings'];
 function switchTab(id){
   TABS.forEach(t=>{
-    document.getElementById(t).classList.toggle('active',t===id);
-    document.querySelectorAll('.nav-item')[TABS.indexOf(t)].classList.toggle('active',t===id);
+    const sec=document.getElementById(t);
+    if(sec) sec.classList.toggle('active',t===id);
+    const navItems=document.querySelectorAll('.nav-item');
+    const idx=TABS.indexOf(t);
+    if(navItems[idx]) navItems[idx].classList.toggle('active',t===id);
     const bn=document.getElementById('bn-'+t);
-    if(bn)bn.classList.toggle('active',t===id);
+    if(bn) bn.classList.toggle('active',t===id);
   });
-  if(id==='stats'){renderStats();}
+  if(id==='stats') renderStats();
+  if(id==='settings'){renderBackdateDates();renderBDHabits();renderPastLog();}
 }
 const FIN_TABS=['overview','trading','spending','rules'];
 function switchFinTab(id){
   FIN_TABS.forEach(t=>{
-    document.getElementById('fin-'+t).classList.toggle('active',t===id);
-    document.querySelectorAll('.fin-tab')[FIN_TABS.indexOf(t)].classList.toggle('active',t===id);
+    const sec=document.getElementById('fin-'+t);
+    if(sec) sec.classList.toggle('active',t===id);
+    const tabs=document.querySelectorAll('.fin-tab');
+    const idx=FIN_TABS.indexOf(t);
+    if(tabs[idx]) tabs[idx].classList.toggle('active',t===id);
   });
 }
 
@@ -702,9 +759,12 @@ function delHabit(id,isCore){
 function updateOverview(){
   const all=allHabits();
   const done=all.filter(h=>h.done).length;
-  document.getElementById('ov-habits').textContent=done+'/'+all.length;
-  document.getElementById('ov-streak').textContent='🔥 '+S.streak;
-  document.getElementById('ov-xp').textContent='+'+Math.max(0,S.todayXP);
+  const ovh=document.getElementById('ov-habits');
+  const ovs=document.getElementById('ov-streak');
+  const ovx=document.getElementById('ov-xp');
+  if(ovh) ovh.textContent=done+'/'+all.length;
+  if(ovs) ovs.textContent='🔥 '+S.streak;
+  if(ovx) ovx.textContent='+'+Math.max(0,S.todayXP);
 }
 
 // ── CONTRACT ──
@@ -862,9 +922,12 @@ function delSpend(id){S.spends=S.spends.filter(x=>x.id!==id);renderFinance();}
 function updateXP(){
   const xpInLevel=S.xp%XP_PER_LEVEL;
   const pct=Math.round((xpInLevel/XP_PER_LEVEL)*100);
-  document.getElementById('xp-fill').style.width=pct+'%';
-  document.getElementById('xp-label').textContent=xpInLevel+' / '+XP_PER_LEVEL;
-  document.getElementById('level-num').textContent=S.level;
+  const fill=document.getElementById('xp-fill');
+  const lbl=document.getElementById('xp-label');
+  const lvl=document.getElementById('level-num');
+  if(fill) fill.style.width=pct+'%';
+  if(lbl) lbl.textContent=xpInLevel+' / '+XP_PER_LEVEL;
+  if(lvl) lvl.textContent=S.level;
   updateOverview();
 }
 
@@ -1061,8 +1124,174 @@ function doConfirm(){
 // ── TOAST ──
 function toast(msg){
   const t=document.getElementById('xp-toast');
+  if(!t) return;
   t.textContent=msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+
+// ── BACKDATE ──
+let bdSelectedDate = null;
+let bdChecked = {};
+
+function renderBackdateDates() {
+  const row = document.getElementById('bd-date-row');
+  if(!row) return;
+  const dates = [];
+  for(let i=1; i<=14; i++) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    dates.push({d, i});
+  }
+  const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  row.innerHTML = dates.map(({d,i}) => {
+    const str = d.toISOString().split('T')[0];
+    const label = i===1 ? 'Yesterday' : i<=7 ? DAYS[d.getDay()] : str.slice(5);
+    return `<button class="bd-date-btn ${bdSelectedDate===str?'active':''}" onclick="selectBDDate('${str}')">${label}</button>`;
+  }).join('');
+}
+
+function selectBDDate(str) {
+  bdSelectedDate = str;
+  bdChecked = {};
+  renderBackdateDates();
+  renderBDHabits();
+}
+
+function renderBDHabits() {
+  const el = document.getElementById('bd-habit-list');
+  if(!el) return;
+  if(!bdSelectedDate) { el.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:8px 0">Select a date above first</div>'; return; }
+  const all = allHabits();
+  // check if already logged
+  const existing = S.pastEntries ? S.pastEntries.find(e=>e.date===bdSelectedDate) : null;
+  if(existing) bdChecked = {...existing.habits};
+  el.innerHTML = all.map(h => `
+    <div class="bd-habit-row" onclick="toggleBDHabit(${h.id})">
+      <div class="bd-check ${bdChecked[h.id]?'done':''}">${bdChecked[h.id]?'✓':''}</div>
+      <span class="bd-name">${h.icon} ${h.name}</span>
+      <span style="font-size:11px;color:var(--purple-light)">+${h.xp}</span>
+    </div>`).join('');
+}
+
+function toggleBDHabit(id) {
+  bdChecked[id] = !bdChecked[id];
+  renderBDHabits();
+}
+
+function saveBackdate() {
+  if(!bdSelectedDate) { toast('Select a date first'); return; }
+  if(!S.pastEntries) S.pastEntries = [];
+  const existing = S.pastEntries.findIndex(e=>e.date===bdSelectedDate);
+  const entry = { date: bdSelectedDate, habits: {...bdChecked} };
+  if(existing>=0) S.pastEntries[existing] = entry;
+  else S.pastEntries.push(entry);
+  // Award XP for checked habits
+  const all = allHabits();
+  let xpGained = 0;
+  Object.entries(bdChecked).forEach(([id,done])=>{
+    if(done) {
+      const h = all.find(x=>x.id===parseInt(id));
+      if(h) { xpGained += h.xp; h.totalDone++; }
+    }
+  });
+  if(xpGained > 0) { S.xp += xpGained; S.lifetimeXP += xpGained; updateXP(); checkLevelUp(); }
+  saveData();
+  renderPastLog();
+  toast('Past entry saved · +'+xpGained+' XP');
+  bdChecked = {}; bdSelectedDate = null;
+  renderBackdateDates(); renderBDHabits();
+}
+
+function renderPastLog() {
+  const el = document.getElementById('past-log-list');
+  if(!el) return;
+  if(!S.pastEntries || !S.pastEntries.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:10px 0;text-align:center">No past entries yet</div>';
+    return;
+  }
+  const all = allHabits();
+  el.innerHTML = S.pastEntries.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(e => {
+    const done = Object.values(e.habits).filter(Boolean).length;
+    const total = Object.keys(e.habits).length;
+    return `<div class="past-row">
+      <span style="color:var(--text-dim)">${e.date}</span>
+      <span style="color:var(--teal-light);font-weight:500">${done}/${total} habits</span>
+    </div>`;
+  }).join('');
+}
+
+// ── EXPORT ──
+function downloadFile(content, filename, type) {
+  const blob = new Blob([content], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  toast('Downloaded · ' + filename);
+}
+
+function exportJSON() {
+  const data = {};
+  PERSIST_FIELDS.forEach(k => data[k] = S[k]);
+  data.pastEntries = S.pastEntries || [];
+  data.exportedAt = new Date().toISOString();
+  data.version = 'strategic-king-v4';
+  downloadFile(JSON.stringify(data, null, 2), 'strategic-king-backup-'+todayStr()+'.json', 'application/json');
+}
+
+function exportHabitsCSV() {
+  const all = allHabits();
+  const rows = [['Habit','Category','Tier','Streak','Total Done','Total Days','Completion Rate %','XP']];
+  all.forEach(h => {
+    const rate = h.totalDays > 0 ? Math.round((h.totalDone/h.totalDays)*100) : 0;
+    rows.push([h.name, h.cat, h.core?'Core':'Builder', h.streak, h.totalDone, h.totalDays, rate, h.xp]);
+  });
+  // Add past entries
+  if(S.pastEntries && S.pastEntries.length) {
+    rows.push([]);
+    rows.push(['--- Past Entries ---']);
+    rows.push(['Date','Habit','Completed']);
+    S.pastEntries.forEach(e => {
+      all.forEach(h => {
+        if(e.habits[h.id] !== undefined) rows.push([e.date, h.name, e.habits[h.id]?'Yes':'No']);
+      });
+    });
+  }
+  downloadFile(rows.map(r=>r.join(',')).join('\n'), 'habits-'+todayStr()+'.csv', 'text/csv');
+}
+
+function exportTradesCSV() {
+  const rows = [['Date','Ticker','Side','P&L','Note']];
+  S.trades.forEach(t => rows.push([t.date||todayStr(), t.ticker, t.side, t.pnl, t.note||'']));
+  downloadFile(rows.map(r=>r.join(',')).join('\n'), 'trades-'+todayStr()+'.csv', 'text/csv');
+}
+
+function exportSpendsCSV() {
+  const rows = [['Date','Description','Category','Amount']];
+  S.spends.forEach(s => rows.push([s.date||todayStr(), s.desc, s.cat, s.amt]));
+  downloadFile(rows.map(r=>r.join(',')).join('\n'), 'spends-'+todayStr()+'.csv', 'text/csv');
+}
+
+function importJSON() {
+  try {
+    const raw = document.getElementById('import-json').value.trim();
+    if(!raw) { toast('Paste your backup JSON first'); return; }
+    const data = JSON.parse(raw);
+    PERSIST_FIELDS.forEach(k => { if(data[k]!==undefined) S[k]=data[k]; });
+    if(data.pastEntries) S.pastEntries = data.pastEntries;
+    saveData();
+    renderHabits(); renderContract(); renderTraits(); renderFinance(); updateXP();
+    renderPastLog(); renderBackdateDates(); renderBDHabits();
+    toast('Data restored successfully 👑');
+  } catch(e) { toast('Invalid JSON — check the file'); }
+}
+
+function resetAll() {
+  if(!confirm('Reset ALL data? This cannot be undone. Export a backup first.')) return;
+  localStorage.removeItem(SAVE_KEY);
+  localStorage.removeItem(DATE_KEY);
+  toast('Data reset. Refresh the page.');
+  setTimeout(()=>location.reload(), 1500);
 }
 
 // ── LOCALSTORAGE ──
@@ -1072,7 +1301,7 @@ const DATE_KEY='strategic_king_date';
 // Fields to persist from S (everything except render-only)
 const PERSIST_FIELDS=['xp','lifetimeXP','level','streak','todayXP','contractStreak',
   'totalHabitsCompleted','unlockedBadges','coreHabits','builderHabits',
-  'contracts','traits','trades','spends','nextId','selectedMove'];
+  'contracts','traits','trades','spends','nextId','selectedMove','pastEntries'];
 
 function saveData(){
   try{
