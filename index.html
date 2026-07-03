@@ -1437,130 +1437,199 @@ function resetAll() {
   setTimeout(()=>location.reload(), 1500);
 }
 
-// ── LOCALSTORAGE ──
-const SAVE_KEY='the_strategist_v4';
-const DATE_KEY='the_strategist_date';
+// ── SUPABASE + LOCAL FALLBACK ──
+const SB_URL = 'https://rsvvdufhfqznenuofqzb.supabase.co';
+const SB_KEY = 'sb_publishable_j1fzDnKTzvIHzvMWoHij2Q_jvfIzKIg';
+const DATE_KEY = 'the_strategist_date';
+const LOCAL_KEY = 'the_strategist_v4';
 
-// Fields to persist from S (everything except render-only)
-const PERSIST_FIELDS=['xp','lifetimeXP','level','streak','todayXP','contractStreak',
-  'totalHabitsCompleted','unlockedBadges','coreHabits','builderHabits',
-  'contracts','traits','trades','spends','nextId','selectedMove','pastEntries'];
+function todayStr(){ return new Date().toISOString().split('T')[0]; }
 
-function saveData(){
-  try{
-    const data={};
-    PERSIST_FIELDS.forEach(k=>data[k]=S[k]);
-    localStorage.setItem(SAVE_KEY,JSON.stringify(data));
-    localStorage.setItem(DATE_KEY,todayStr());
-  }catch(e){console.warn('Save failed',e);}
+async function sbFetch(path, method='GET', body=null){
+  const opts={method,headers:{
+    'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,
+    'Content-Type':'application/json',
+    'Prefer': method==='POST'?'resolution=merge-duplicates':''
+  }};
+  if(body) opts.body=JSON.stringify(body);
+  const res=await fetch(SB_URL+'/rest/v1/'+path,opts);
+  if(!res.ok){const err=await res.text();throw new Error(err);}
+  if(method==='GET') return res.json();
+  return true;
 }
 
-function loadData(){
+async function saveData(){
   try{
-    const raw=localStorage.getItem(SAVE_KEY);
+    await sbFetch('user_state?on_conflict=id','POST',[{
+      id:'marcus',xp:S.xp,lifetime_xp:S.lifetimeXP,level:S.level,
+      streak:S.streak,today_xp:S.todayXP,
+      total_habits_completed:S.totalHabitsCompleted,
+      unlocked_badges:S.unlockedBadges,selected_move:S.selectedMove,
+      next_id:S.nextId,updated_at:new Date().toISOString()
+    }]);
+    const habitRows=[...S.coreHabits,...S.builderHabits].map(h=>({
+      id:h.id,name:h.name,xp:h.xp,done:h.done,streak:h.streak||0,
+      history:h.history||[],is_core:h.core,icon:h.icon,category:h.cat,
+      time_of_day:h.time,rest_day:h.restDay,total_done:h.totalDone||0,
+      total_days:h.totalDays||1,has_move_picker:!!h.hasMovePicker,
+      updated_at:new Date().toISOString()
+    }));
+    if(habitRows.length) await sbFetch('habits?on_conflict=id','POST',habitRows);
+    const contractRows=S.contracts.map(c=>({
+      id:c.id,domain:c.domain,color:c.color,rule:c.rule,status:c.status,
+      updated_at:new Date().toISOString()
+    }));
+    if(contractRows.length) await sbFetch('contract_rules?on_conflict=id','POST',contractRows);
+    const traitRows=S.traits.map(t=>({
+      id:t.id,name:t.name,pct:t.pct,color:t.color,gap:t.gap,
+      updated_at:new Date().toISOString()
+    }));
+    if(traitRows.length) await sbFetch('traits?on_conflict=id','POST',traitRows);
+    if(S.trades.length) await sbFetch('trades?on_conflict=id','POST',
+      S.trades.map(t=>({id:t.id,ticker:t.ticker,side:t.side,pnl:t.pnl,note:t.note||''})));
+    if(S.spends.length) await sbFetch('spends?on_conflict=id','POST',
+      S.spends.map(s=>({id:s.id,description:s.desc,category:s.cat,amount:s.amt})));
+    localStorage.setItem(DATE_KEY,todayStr());
+    localSave();
+  }catch(e){
+    console.warn('Supabase save failed, local fallback:',e);
+    localSave();
+  }
+}
+
+function localSave(){
+  try{
+    localStorage.setItem(LOCAL_KEY,JSON.stringify({
+      xp:S.xp,lifetimeXP:S.lifetimeXP,level:S.level,streak:S.streak,
+      todayXP:S.todayXP,totalHabitsCompleted:S.totalHabitsCompleted,
+      unlockedBadges:S.unlockedBadges,nextId:S.nextId,
+      coreHabits:S.coreHabits,builderHabits:S.builderHabits,
+      contracts:S.contracts,traits:S.traits,trades:S.trades,spends:S.spends
+    }));
+    localStorage.setItem(DATE_KEY,todayStr());
+  }catch(e){console.warn('Local save failed',e);}
+}
+
+async function loadData(){
+  try{
+    const[stateRows,habitRows,contractRows,traitRows,tradeRows,spendRows]=await Promise.all([
+      sbFetch('user_state?id=eq.marcus'),
+      sbFetch('habits?order=id'),
+      sbFetch('contract_rules?order=id'),
+      sbFetch('traits?order=id'),
+      sbFetch('trades?order=id'),
+      sbFetch('spends?order=id'),
+    ]);
+    if(stateRows.length){
+      const st=stateRows[0];
+      S.xp=st.xp||0;S.lifetimeXP=st.lifetime_xp||0;S.level=st.level||1;
+      S.streak=st.streak||0;S.todayXP=st.today_xp||0;
+      S.totalHabitsCompleted=st.total_habits_completed||0;
+      S.unlockedBadges=st.unlocked_badges||[];
+      S.selectedMove=st.selected_move||null;S.nextId=st.next_id||100;
+    }
+    if(habitRows.length){
+      const core=[],builder=[];
+      habitRows.forEach(h=>{
+        const habit={id:h.id,name:h.name,xp:h.xp,done:h.done,streak:h.streak||0,
+          history:h.history||[],core:h.is_core,icon:h.icon,cat:h.category,
+          time:h.time_of_day,restDay:h.rest_day,totalDone:h.total_done||0,
+          totalDays:h.total_days||1,hasMovePicker:h.has_move_picker||false};
+        if(h.is_core) core.push(habit); else builder.push(habit);
+      });
+      if(core.length) S.coreHabits=core;
+      if(builder.length) S.builderHabits=builder;
+    }
+    if(contractRows.length) S.contracts=contractRows.map(c=>({
+      id:c.id,domain:c.domain,color:c.color,rule:c.rule,status:c.status}));
+    if(traitRows.length) S.traits=traitRows.map(t=>({
+      id:t.id,name:t.name,pct:t.pct,color:t.color,gap:t.gap}));
+    if(tradeRows.length) S.trades=tradeRows.map(t=>({
+      id:t.id,ticker:t.ticker,side:t.side,pnl:t.pnl,note:t.note}));
+    if(spendRows.length) S.spends=spendRows.map(s=>({
+      id:s.id,desc:s.description,cat:s.category,amt:s.amount}));
+    return stateRows.length>0;
+  }catch(e){
+    console.warn('Supabase load failed, local fallback:',e);
+    return loadLocal();
+  }
+}
+
+function loadLocal(){
+  try{
+    const raw=localStorage.getItem(LOCAL_KEY);
     if(!raw) return false;
     const data=JSON.parse(raw);
-    PERSIST_FIELDS.forEach(k=>{if(data[k]!==undefined)S[k]=data[k];});
+    ['xp','lifetimeXP','level','streak','todayXP','totalHabitsCompleted',
+     'unlockedBadges','nextId','coreHabits','builderHabits',
+     'contracts','traits','trades','spends'].forEach(k=>{
+      if(data[k]!==undefined) S[k]=data[k];
+    });
     return true;
-  }catch(e){console.warn('Load failed',e);return false;}
-}
-
-function todayStr(){
-  return new Date().toISOString().split('T')[0];
+  }catch(e){return false;}
 }
 
 function checkDailyReset(){
   const lastDate=localStorage.getItem(DATE_KEY);
   const today=todayStr();
-  if(lastDate===today) return; // same day, no reset needed
-
-  // New day — reset habit done states but preserve streaks
+  if(lastDate===today) return;
   const resetHabits=(list)=>list.forEach(h=>{
-    // Update streak based on yesterday's completion
-    if(h.done){
-      h.streak=(h.streak||0)+1; // carried from yesterday's toggle, just keep
-    } else if(!h.restDay){
-      h.streak=0; // missed — streak broken
-    }
-    // Push yesterday to history
+    if(h.done){h.streak=(h.streak||0)+1;}
+    else if(!h.restDay){h.streak=0;}
     h.history=h.history||[];
     h.history.push(h.done?1:0);
-    if(h.history.length>84) h.history.shift(); // keep 12 weeks
+    if(h.history.length>84) h.history.shift();
     h.totalDays=(h.totalDays||0)+1;
-    // Reset for today
-    h.done=false;
-    h.restDay=false;
+    h.done=false;h.restDay=false;
   });
-
   resetHabits(S.coreHabits);
   resetHabits(S.builderHabits);
-
-  // Reset contract statuses
   S.contracts.forEach(c=>c.status=null);
-
-  // Reset today's XP tracker
   S.todayXP=0;
-
-  // Update streak counter
-  // If yesterday all core habits were done, streak continues — otherwise reset
-  // (simplified: if we had a save from yesterday, assume streak continues)
   if(lastDate){
-    const yesterday=new Date(); yesterday.setDate(yesterday.getDate()-1);
-    const yStr=yesterday.toISOString().split('T')[0];
-    if(lastDate===yStr){
-      S.streak=(S.streak||0)+1; // consecutive day
-    } else {
-      S.streak=0; // gap in days
-    }
+    const y=new Date();y.setDate(y.getDate()-1);
+    if(lastDate===y.toISOString().split('T')[0]) S.streak=(S.streak||0)+1;
+    else S.streak=0;
   }
-
   saveData();
-  toast('New day · habits reset · keep the streak 🔥');
+  toast('New day, Marcus · keep the streak 🔥');
 }
 
-// Auto-save whenever state changes — wrap key mutating functions
+async function sbDelete(table,id){
+  try{ await sbFetch(table+'?id=eq.'+id,'DELETE'); }
+  catch(e){ console.warn('Delete failed',e); }
+}
+
+// ── MUTATION WRAPPERS ──
 const _origToggleHabit=toggleHabit;
 toggleHabit=function(id,isCore){_origToggleHabit(id,isCore);saveData();updateTiles();};
-
 const _origToggleRest=toggleRest;
 toggleRest=function(id,isCore){_origToggleRest(id,isCore);saveData();};
-
-const _origDelHabit=delHabit;
-delHabit=function(id,isCore){_origDelHabit(id,isCore);saveData();};
-
 const _origSetContract=setContract;
 setContract=function(id,status){_origSetContract(id,status);saveData();updateTiles();};
-
-const _origDelContract=delContract;
-delContract=function(id){_origDelContract(id);saveData();};
-
-const _origDelTrait=delTrait;
-delTrait=function(id){_origDelTrait(id);saveData();};
-
-const _origDelTrade=delTrade;
-delTrade=function(id){_origDelTrade(id);saveData();};
-
-const _origDelSpend=delSpend;
-delSpend=function(id){_origDelSpend(id);saveData();};
-
+const _origSelectMove=selectMove;
+selectMove=function(m){_origSelectMove(m);saveData();};
+const _origCloseLevelUp=closeLevelUp;
+closeLevelUp=function(){_origCloseLevelUp();saveData();};
 const _origDoConfirm=doConfirm;
 doConfirm=function(){_origDoConfirm();saveData();};
 
-const _origSelectMove=selectMove;
-selectMove=function(m){_origSelectMove(m);saveData();};
-
-const _origCloseLevelUp=closeLevelUp;
-closeLevelUp=function(){_origCloseLevelUp();saveData();};
+const _origDelHabit=delHabit;
+delHabit=async function(id,isCore){_origDelHabit(id,isCore);await sbDelete('habits',id);await saveData();};
+const _origDelContract=delContract;
+delContract=async function(id){_origDelContract(id);await sbDelete('contract_rules',id);await saveData();};
+const _origDelTrait=delTrait;
+delTrait=async function(id){_origDelTrait(id);await sbDelete('traits',id);await saveData();};
+const _origDelTrade=delTrade;
+delTrade=async function(id){_origDelTrade(id);await sbDelete('trades',id);renderFinance();};
+const _origDelSpend=delSpend;
+delSpend=async function(id){_origDelSpend(id);await sbDelete('spends',id);renderFinance();};
 
 // ── INIT ──
-setTimeout(()=>{
-  // Load saved data first
-  const loaded=loadData();
-
-  // Check if it's a new day and reset accordingly
+async function init(){
+  toast('Syncing with cloud...');
+  const loaded=await loadData();
   checkDailyReset();
-
-  // Render everything
   renderTodayBanner();
   renderWeekGrid();
   renderHabits();
@@ -1568,11 +1637,15 @@ setTimeout(()=>{
   renderTraits();
   renderFinance();
   updateXP();
+  renderBackdateDates();
+  renderBDHabits();
+  renderPastLog();
+  updateTiles();
+  if(loaded) toast('Welcome back, Marcus 👑');
+  else toast('Fresh start · The Strategist begins 👑');
+}
 
-  if(loaded){
-    toast('Welcome back, King 👑');
-  }
-},150);
+init();
 </script>
 </body>
 </html>
