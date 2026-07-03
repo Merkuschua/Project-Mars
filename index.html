@@ -1455,35 +1455,43 @@ function showSync(msg, ok=true){
   if(ok) setTimeout(()=>bar.style.display='none', 3000);
 }
 
-async function sbFetch(path, method='GET', body=null){
-  const opts={method,headers:{
-    'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,
+async function sbFetch(path, method='GET', body=null, prefer=''){
+  const headers={
+    'apikey':SB_KEY,
+    'Authorization':'Bearer '+SB_KEY,
     'Content-Type':'application/json',
-    'Prefer': method==='POST'?'resolution=merge-duplicates,return=representation':''
-  }};
+  };
+  if(prefer) headers['Prefer']=prefer;
+  const opts={method,headers};
   if(body) opts.body=JSON.stringify(body);
   try{
     const res=await fetch(SB_URL+'/rest/v1/'+path,opts);
     if(!res.ok){
       const err=await res.text();
-      console.error('Supabase error:', path, err);
-      showSync('⚠ Sync error: '+err.slice(0,60), false);
+      console.error('Supabase error ['+method+'] '+path+':', err);
+      showSync('⚠ Sync error: '+err.slice(0,80), false);
       throw new Error(err);
     }
-    if(method==='GET') return res.json();
+    const ct=res.headers.get('content-type')||'';
+    if(method==='GET'||ct.includes('json')) return res.json().catch(()=>[]);
     return true;
   }catch(e){
     if(e.name==='TypeError'){
-      showSync('⚠ No connection — saved locally', false);
+      console.error('Network error:', e);
+      showSync('⚠ No internet — saved locally', false);
     }
     throw e;
   }
 }
 
+async function sbUpsert(table, rows){
+  return sbFetch(table, 'POST', rows, 'resolution=merge-duplicates,return=minimal');
+}
+
 async function saveData(){
   try{
     showSync('⏳ Saving...', true);
-    await sbFetch('user_state?on_conflict=id','POST',[{
+    await sbUpsert('user_state',[{
       id:'marcus',xp:S.xp,lifetime_xp:S.lifetimeXP,level:S.level,
       streak:S.streak,today_xp:S.todayXP,
       total_habits_completed:S.totalHabitsCompleted,
@@ -1497,20 +1505,20 @@ async function saveData(){
       total_days:h.totalDays||1,has_move_picker:!!h.hasMovePicker,
       updated_at:new Date().toISOString()
     }));
-    if(habitRows.length) await sbFetch('habits?on_conflict=id','POST',habitRows);
+    if(habitRows.length) await sbUpsert('habits',habitRows);
     const contractRows=S.contracts.map(c=>({
       id:c.id,domain:c.domain,color:c.color,rule:c.rule,status:c.status,
       updated_at:new Date().toISOString()
     }));
-    if(contractRows.length) await sbFetch('contract_rules?on_conflict=id','POST',contractRows);
+    if(contractRows.length) await sbUpsert('contract_rules',contractRows);
     const traitRows=S.traits.map(t=>({
       id:t.id,name:t.name,pct:t.pct,color:t.color,gap:t.gap,
       updated_at:new Date().toISOString()
     }));
-    if(traitRows.length) await sbFetch('traits?on_conflict=id','POST',traitRows);
-    if(S.trades.length) await sbFetch('trades?on_conflict=id','POST',
+    if(traitRows.length) await sbUpsert('traits',traitRows);
+    if(S.trades.length) await sbUpsert('trades',
       S.trades.map(t=>({id:t.id,ticker:t.ticker,side:t.side,pnl:t.pnl,note:t.note||''})));
-    if(S.spends.length) await sbFetch('spends?on_conflict=id','POST',
+    if(S.spends.length) await sbUpsert('spends',
       S.spends.map(s=>({id:s.id,description:s.desc,category:s.cat,amount:s.amt})));
     localStorage.setItem(DATE_KEY,todayStr());
     localSave();
@@ -1621,7 +1629,7 @@ function checkDailyReset(){
 }
 
 async function sbDelete(table,id){
-  try{ await sbFetch(table+'?id=eq.'+id,'DELETE'); }
+  try{ await sbFetch(table+'?id=eq.'+id,'DELETE',null,''); }
   catch(e){ console.warn('Delete failed',e); }
 }
 
