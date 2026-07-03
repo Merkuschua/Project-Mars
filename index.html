@@ -1439,27 +1439,50 @@ function resetAll() {
 
 // ── SUPABASE + LOCAL FALLBACK ──
 const SB_URL = 'https://rsvvdufhfqznenuofqzb.supabase.co';
-const SB_KEY = 'sb_publishable_j1fzDnKTzvIHzvMWoHij2Q_jvfIzKIg';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzdnZkdWZoZnF6bmVudW9mcXpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk3OTc0MDcsImV4cCI6MjA5NTM3MzQwN30.dioTefORlZaU9qLKFfawhtYw9cPeqrFSE9akPxAdQiI';
 const DATE_KEY = 'the_strategist_date';
 const LOCAL_KEY = 'the_strategist_v4';
 
 function todayStr(){ return new Date().toISOString().split('T')[0]; }
 
+function showSync(msg, ok=true){
+  const bar=document.getElementById('sync-bar');
+  if(!bar) return;
+  bar.textContent = msg;
+  bar.style.display = 'block';
+  bar.style.background = ok ? '#e8f5e0' : '#fde8e8';
+  bar.style.color = ok ? '#3a6e20' : '#8b2020';
+  if(ok) setTimeout(()=>bar.style.display='none', 3000);
+}
+
 async function sbFetch(path, method='GET', body=null){
   const opts={method,headers:{
     'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,
     'Content-Type':'application/json',
-    'Prefer': method==='POST'?'resolution=merge-duplicates':''
+    'Prefer': method==='POST'?'resolution=merge-duplicates,return=representation':''
   }};
   if(body) opts.body=JSON.stringify(body);
-  const res=await fetch(SB_URL+'/rest/v1/'+path,opts);
-  if(!res.ok){const err=await res.text();throw new Error(err);}
-  if(method==='GET') return res.json();
-  return true;
+  try{
+    const res=await fetch(SB_URL+'/rest/v1/'+path,opts);
+    if(!res.ok){
+      const err=await res.text();
+      console.error('Supabase error:', path, err);
+      showSync('⚠ Sync error: '+err.slice(0,60), false);
+      throw new Error(err);
+    }
+    if(method==='GET') return res.json();
+    return true;
+  }catch(e){
+    if(e.name==='TypeError'){
+      showSync('⚠ No connection — saved locally', false);
+    }
+    throw e;
+  }
 }
 
 async function saveData(){
   try{
+    showSync('⏳ Saving...', true);
     await sbFetch('user_state?on_conflict=id','POST',[{
       id:'marcus',xp:S.xp,lifetime_xp:S.lifetimeXP,level:S.level,
       streak:S.streak,today_xp:S.todayXP,
@@ -1491,9 +1514,11 @@ async function saveData(){
       S.spends.map(s=>({id:s.id,description:s.desc,category:s.cat,amount:s.amt})));
     localStorage.setItem(DATE_KEY,todayStr());
     localSave();
+    showSync('✓ Synced to cloud', true);
   }catch(e){
     console.warn('Supabase save failed, local fallback:',e);
     localSave();
+    showSync('⚠ Saved locally (offline)', false);
   }
 }
 
@@ -1627,7 +1652,7 @@ delSpend=async function(id){_origDelSpend(id);await sbDelete('spends',id);render
 
 // ── INIT ──
 async function init(){
-  toast('Syncing with cloud...');
+  showSync('⏳ Connecting to cloud...', true);
   const loaded=await loadData();
   checkDailyReset();
   renderTodayBanner();
@@ -1641,8 +1666,13 @@ async function init(){
   renderBDHabits();
   renderPastLog();
   updateTiles();
-  if(loaded) toast('Welcome back, Marcus 👑');
-  else toast('Fresh start · The Strategist begins 👑');
+  if(loaded){
+    showSync('✓ Cloud sync successful', true);
+    setTimeout(()=>toast('Welcome back, Marcus 👑'), 500);
+  } else {
+    showSync('Starting fresh — data will save to cloud', true);
+    setTimeout(()=>toast('The Strategist begins 👑'), 500);
+  }
 }
 
 init();
